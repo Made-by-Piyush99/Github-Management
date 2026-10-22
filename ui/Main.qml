@@ -143,6 +143,7 @@ ApplicationWindow {
                 }
                 onRefreshClicked: appWindow.refreshAll()
                 onGithubPillClicked: appWindow.activeTab = 6
+                onCreateRepoClicked: appWindow.openCreateRepoDialog()
             }
 
             // Central Views Stack
@@ -158,7 +159,9 @@ ApplicationWindow {
                         appWindow.openProjectDetails(pId);
                     }
                     onRequestQuickAction: function(act, proj) {
-                        if (act === "refresh_all") {
+                        if (act === "create_repo") {
+                            appWindow.openCreateRepoDialog();
+                        } else if (act === "refresh_all") {
                             appWindow.refreshAll();
                         } else if (act === "folder") {
                             backendBridge.openFolder(proj.local_path);

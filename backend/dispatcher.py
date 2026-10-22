@@ -575,6 +575,9 @@ class Dispatcher:
             self.github_client.set_base_url(new_settings["github_api_url"])
         return self.settings_store.get_all()
 
+    def _cmd_security_encryption_info(self, args: Dict[str, Any]) -> Any:
+        return self.keyring_auth.get_encryption_info()
+
     def _cmd_system_info(self, args: Dict[str, Any]) -> Any:
         import sys
         return {

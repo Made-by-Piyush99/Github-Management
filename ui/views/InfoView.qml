@@ -95,16 +95,16 @@ ScrollView {
                     Item { Layout.fillWidth: true }
 
                     ActionButton {
-                        text: "🌐 Generate Token on GitHub (Pre-configured)"
+                        text: "🌐 Generate Token on GitHub (All Scopes Pre-selected)"
                         iconText: "↗️"
                         btnStyle: "primary"
                         small: true
-                        onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevSyncStudio")
+                        onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?description=DevSyncStudio_FullAccess&scopes=repo,workflow,write:packages,read:packages,delete:packages,admin:org,admin:public_key,admin:repo_hook,admin:org_hook,gist,notifications,user,delete_repo,write:discussion,admin:enterprise,audit_log,codespace,project,admin:gpg_key")
                     }
                 }
 
                 Text {
-                    text: "DevSync Studio uses a Personal Access Token (Classic) to authenticate with GitHub. Tokens are stored encrypted in your Windows Credential Manager and never saved in plaintext."
+                    text: "DevSync Studio uses a Personal Access Token (Classic) with all checkboxes selected for complete capability (repositories, packages, workflows, webhooks, and account operations). Credentials are fully encrypted using military-grade AES-256-GCM and Windows DPAPI."
                     color: themeManager.textSecondary
                     font.pixelSize: 12
                     lineHeight: 1.3

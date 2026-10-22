@@ -87,11 +87,24 @@ ScrollView {
             Layout.fillWidth: true
             spacing: 12
 
-            Text {
-                text: "WORKSPACE SUMMARY"
-                color: themeManager.textMuted
-                font.pixelSize: 11
-                font.weight: Font.Bold
+            RowLayout {
+                Layout.fillWidth: true
+                Text {
+                    text: "WORKSPACE SUMMARY"
+                    color: themeManager.textMuted
+                    font.pixelSize: 11
+                    font.weight: Font.Bold
+                }
+
+                Item { Layout.fillWidth: true }
+
+                ActionButton {
+                    text: "Create New Repository"
+                    iconText: "➕"
+                    btnStyle: "primary"
+                    small: true
+                    onClicked: root.requestQuickAction("create_repo", null)
+                }
             }
 
             GridLayout {

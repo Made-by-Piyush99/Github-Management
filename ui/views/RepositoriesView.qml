@@ -84,6 +84,13 @@ ScrollView {
             Item { Layout.fillWidth: true }
 
             ActionButton {
+                text: "Create New Repository"
+                iconText: "➕"
+                btnStyle: "primary"
+                onClicked: appWindow.openCreateRepoDialog()
+            }
+
+            ActionButton {
                 text: "Refresh"
                 iconText: "🔄"
                 btnStyle: "subtle"

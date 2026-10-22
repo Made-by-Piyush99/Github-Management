@@ -13,6 +13,7 @@ Rectangle {
     signal searchChanged(string query)
     signal refreshClicked()
     signal githubPillClicked()
+    signal createRepoClicked()
 
     height: 56
     color: themeManager.bgSecondary
@@ -94,6 +95,14 @@ Rectangle {
         }
 
         Item { Layout.fillWidth: true }
+
+        // Create New Repository Button (Visible across all tabs!)
+        ActionButton {
+            text: "New Repo"
+            iconText: "➕"
+            btnStyle: "primary"
+            onClicked: root.createRepoClicked()
+        }
 
         // Refresh All Button
         ActionButton {

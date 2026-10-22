@@ -208,16 +208,16 @@ ScrollView {
                     }
 
                     ActionButton {
-                        text: "Generate Token on GitHub"
+                        text: "Generate Token on GitHub (All Scopes Pre-selected)"
                         iconText: "🌐"
                         btnStyle: "primary"
                         small: true
-                        onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevSyncStudio")
+                        onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?description=DevSyncStudio_FullAccess&scopes=repo,workflow,write:packages,read:packages,delete:packages,admin:org,admin:public_key,admin:repo_hook,admin:org_hook,gist,notifications,user,delete_repo,write:discussion,admin:enterprise,audit_log,codespace,project,admin:gpg_key")
                     }
                 }
 
                 Text {
-                    text: "💡 Click the button above to open GitHub with the required 'repo' and 'read:user' permissions pre-selected. Generate the token, copy it, and paste it into the GitHub tab."
+                    text: "💡 Click the button above to open GitHub with ALL check boxes pre-selected automatically (repo, workflow, packages, admin, gist, notifications, user, etc.) for complete app management without permission errors."
                     color: themeManager.textSecondary
                     font.pixelSize: 11
                     wrapMode: Text.WordWrap

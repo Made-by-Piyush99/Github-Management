@@ -185,11 +185,11 @@ ScrollView {
                         }
 
                         ActionButton {
-                            text: "Generate Token on GitHub"
+                            text: "Generate Token on GitHub (All Scopes Pre-selected)"
                             iconText: "🌐"
                             btnStyle: "subtle"
                             small: true
-                            onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevSyncStudio")
+                            onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?description=DevSyncStudio_FullAccess&scopes=repo,workflow,write:packages,read:packages,delete:packages,admin:org,admin:public_key,admin:repo_hook,admin:org_hook,gist,notifications,user,delete_repo,write:discussion,admin:enterprise,audit_log,codespace,project,admin:gpg_key")
                         }
                     }
 
@@ -266,14 +266,30 @@ ScrollView {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
-                        Text {
-                            text: "🔒 Required permissions: 'repo' and 'read:user'."
-                            color: themeManager.textMuted
-                            font.pixelSize: 11
+                        Rectangle {
+                            height: 22
+                            width: encLabel.implicitWidth + 14
+                            radius: 4
+                            color: Qt.rgba(themeManager.success.r, themeManager.success.g, themeManager.success.b, 0.15)
+                            border.color: themeManager.success
+                            border.width: 1
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: 4
+                                Text { text: "🔒"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                                Text {
+                                    id: encLabel
+                                    text: "End-to-End Encrypted (Windows DPAPI + AES-256-GCM)"
+                                    color: themeManager.success
+                                    font.pixelSize: 10
+                                    font.weight: Font.DemiBold
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
                         }
                         Item { Layout.fillWidth: true }
                         Text {
-                            text: "💡 Click 'Generate Token on GitHub' above to pre-select scopes automatically."
+                            text: "💡 Click button above: opens GitHub with ALL check boxes pre-selected."
                             color: themeManager.accent
                             font.pixelSize: 11
                         }
