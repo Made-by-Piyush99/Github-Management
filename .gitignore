@@ -1,0 +1,20 @@
+# Build outputs
+build/
+dist/
+bin/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Databases & local user files
+*.db
+*.db-wal
+*.db-shm
+
+# IDE & OS
+.vscode/
+.idea/
+Thumbs.db

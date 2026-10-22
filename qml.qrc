@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ui/Main.qml</file>
+        <file>ui/components/ActionButton.qml</file>
+        <file>ui/components/ConfirmDialog.qml</file>
+        <file>ui/components/DiffViewer.qml</file>
+        <file>ui/components/ProjectCard.qml</file>
+        <file>ui/components/Sidebar.qml</file>
+        <file>ui/components/StatCard.qml</file>
+        <file>ui/components/StatusBadge.qml</file>
+        <file>ui/components/TextInputDialog.qml</file>
+        <file>ui/components/Toast.qml</file>
+        <file>ui/components/TopBar.qml</file>
+        <file>ui/views/ActivityView.qml</file>
+        <file>ui/views/BranchesView.qml</file>
+        <file>ui/views/ChangesView.qml</file>
+        <file>ui/views/DashboardView.qml</file>
+        <file>ui/views/GitHubView.qml</file>
+        <file>ui/views/ProjectDetailView.qml</file>
+        <file>ui/views/ProjectsView.qml</file>
+        <file>ui/views/RepositoriesView.qml</file>
+        <file>ui/views/SettingsView.qml</file>
+    </qresource>
+</RCC>
