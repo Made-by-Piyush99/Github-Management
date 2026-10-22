@@ -174,11 +174,23 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
 
-                    Text {
-                        text: "PERSONAL ACCESS TOKEN (CLASSIC OR FINE-GRAINED)"
-                        color: themeManager.textMuted
-                        font.pixelSize: 11
-                        font.weight: Font.Bold
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Text {
+                            text: "PERSONAL ACCESS TOKEN (CLASSIC OR FINE-GRAINED)"
+                            color: themeManager.textMuted
+                            font.pixelSize: 11
+                            font.weight: Font.Bold
+                            Layout.fillWidth: true
+                        }
+
+                        ActionButton {
+                            text: "Generate Token on GitHub"
+                            iconText: "🌐"
+                            btnStyle: "subtle"
+                            small: true
+                            onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevSyncStudio")
+                        }
                     }
 
                     RowLayout {
@@ -251,10 +263,20 @@ ScrollView {
                         }
                     }
 
-                    Text {
-                        text: "🔒 Required permissions: 'repo' (Full control of private repositories) and 'read:user'."
-                        color: themeManager.textMuted
-                        font.pixelSize: 11
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Text {
+                            text: "🔒 Required permissions: 'repo' and 'read:user'."
+                            color: themeManager.textMuted
+                            font.pixelSize: 11
+                        }
+                        Item { Layout.fillWidth: true }
+                        Text {
+                            text: "💡 Click 'Generate Token on GitHub' above to pre-select scopes automatically."
+                            color: themeManager.accent
+                            font.pixelSize: 11
+                        }
                     }
                 }
             }
@@ -285,26 +307,7 @@ ScrollView {
                     btnStyle: "primary"
                     small: true
                     onClicked: {
-                        textInputDialog.open(
-                            "Create GitHub Repository",
-                            "Enter the name of the new remote repository to create on GitHub:",
-                            "my-new-repo",
-                            "",
-                            function(repoName) {
-                                backendBridge.sendRequest(
-                                    "github.create_repo",
-                                    {"name": repoName, "description": "", "private": true, "auto_init": false},
-                                    function(success, data, err) {
-                                        if (success) {
-                                            toast.show("Created GitHub repository: " + data.repository.full_name, "success");
-                                            root.loadRemoteRepos();
-                                        } else {
-                                            toast.show("Failed: " + err, "error");
-                                        }
-                                    }
-                                );
-                            }
-                        );
+                        appWindow.openCreateRepoDialog();
                     }
                 }
             }
@@ -353,6 +356,25 @@ ScrollView {
                             text: "⭐ " + modelData.stargazers_count
                             color: themeManager.textSecondary
                             font.pixelSize: 11
+                        }
+
+                        ActionButton {
+                            text: "Clone to Local"
+                            iconText: "📥"
+                            btnStyle: "primary"
+                            small: true
+                            onClicked: {
+                                var target = "D:/DevSyncProjects/" + modelData.name;
+                                toast.show("Cloning " + modelData.name + "...", "info");
+                                backendBridge.sendRequest("git.clone", {"url": modelData.clone_url, "target_dir": target, "name": modelData.name}, function(success, data, err) {
+                                    if (success) {
+                                        toast.show("Cloned " + modelData.name + " successfully!", "success");
+                                        root.checkConnection();
+                                    } else {
+                                        toast.show("Clone failed: " + err, "error");
+                                    }
+                                });
+                            }
                         }
 
                         ActionButton {

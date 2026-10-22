@@ -178,8 +178,10 @@ class GitHubClient:
         description: str = "",
         private: bool = True,
         auto_init: bool = False,
+        gitignore_template: Optional[str] = None,
+        license_template: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Creates a new repository on GitHub."""
+        """Creates a new repository on GitHub with optional README, gitignore, and license."""
         clean_name = name.strip()
         if not clean_name:
             return {"success": False, "error": "Repository name cannot be empty."}
@@ -189,8 +191,12 @@ class GitHubClient:
             "name": clean_name,
             "description": description.strip(),
             "private": private,
-            "auto_init": auto_init,
+            "auto_init": auto_init or bool(gitignore_template or license_template),
         }
+        if gitignore_template and gitignore_template.lower() != "none":
+            payload["gitignore_template"] = gitignore_template
+        if license_template and license_template.lower() != "none":
+            payload["license_template"] = license_template
 
         try:
             resp = self.session.post(url, headers=self._get_headers(), json=payload, timeout=15.0)

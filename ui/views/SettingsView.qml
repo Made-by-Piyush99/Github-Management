@@ -190,10 +190,44 @@ ScrollView {
                 spacing: 14
 
                 Text {
-                    text: "GITHUB API ENDPOINT"
+                    text: "GITHUB API & CLASSIC TOKEN"
                     color: themeManager.textMuted
                     font.pixelSize: 11
                     font.weight: Font.Bold
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+
+                    Text {
+                        text: "Need a GitHub Personal Access Token (Classic)?"
+                        color: themeManager.textPrimary
+                        font.pixelSize: 13
+                        Layout.fillWidth: true
+                    }
+
+                    ActionButton {
+                        text: "Generate Token on GitHub"
+                        iconText: "🌐"
+                        btnStyle: "primary"
+                        small: true
+                        onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevSyncStudio")
+                    }
+                }
+
+                Text {
+                    text: "💡 Click the button above to open GitHub with the required 'repo' and 'read:user' permissions pre-selected. Generate the token, copy it, and paste it into the GitHub tab."
+                    color: themeManager.textSecondary
+                    font.pixelSize: 11
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: themeManager.borderPrimary
                 }
 
                 RowLayout {
@@ -221,7 +255,7 @@ ScrollView {
 
                     ActionButton {
                         text: "Update Endpoint"
-                        btnStyle: "primary"
+                        btnStyle: "secondary"
                         onClicked: {
                             backendBridge.sendRequest("settings.set", {"settings": {"github_api_url": apiUrlField.text.trim()}}, function(s) {
                                 if (s) {

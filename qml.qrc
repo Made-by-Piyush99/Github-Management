@@ -2,7 +2,9 @@
     <qresource prefix="/">
         <file>ui/Main.qml</file>
         <file>ui/components/ActionButton.qml</file>
+        <file>ui/components/AppTourDialog.qml</file>
         <file>ui/components/ConfirmDialog.qml</file>
+        <file>ui/components/CreateRepoDialog.qml</file>
         <file>ui/components/DiffViewer.qml</file>
         <file>ui/components/ProjectCard.qml</file>
         <file>ui/components/Sidebar.qml</file>
@@ -16,6 +18,7 @@
         <file>ui/views/ChangesView.qml</file>
         <file>ui/views/DashboardView.qml</file>
         <file>ui/views/GitHubView.qml</file>
+        <file>ui/views/InfoView.qml</file>
         <file>ui/views/ProjectDetailView.qml</file>
         <file>ui/views/ProjectsView.qml</file>
         <file>ui/views/RepositoriesView.qml</file>

@@ -24,6 +24,7 @@ Rectangle {
         { title: "Changes & Commits", icon: "📝" },
         { title: "Activity & Reports", icon: "📜" },
         { title: "GitHub", icon: "🐙" },
+        { title: "Guide & Info", icon: "📖" },
         { title: "Settings", icon: "⚙️" }
     ]
 

@@ -13,6 +13,21 @@ class GitOperations:
     def __init__(self, cli: Optional[GitCLI] = None):
         self.cli = cli or GitCLI()
 
+    def clone_repo(self, url: str, target_dir: str, branch: Optional[str] = None) -> Dict[str, Any]:
+        """Clones a remote repository into target directory."""
+        os.makedirs(os.path.dirname(os.path.abspath(target_dir)), exist_ok=True)
+        cmd = ["clone", "--progress"]
+        if branch:
+            cmd.extend(["-b", branch])
+        cmd.extend([url, target_dir])
+        res = self.cli.run(cmd, timeout=300.0)
+        return {
+            "success": res.ok,
+            "message": res.stdout.strip() or res.stderr.strip(),
+            "error": res.stderr.strip() if not res.ok else None,
+            "target_dir": target_dir,
+        }
+
     def init_repo(self, path: str, default_branch: str = "main") -> Dict[str, Any]:
         """Initializes a new Git repository."""
         if not os.path.exists(path):

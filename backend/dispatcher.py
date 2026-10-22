@@ -159,6 +159,63 @@ class Dispatcher:
     # Git Handlers
     # ==========================
 
+    def _cmd_git_clone(self, args: Dict[str, Any]) -> Any:
+        url = args.get("url", "").strip()
+        target_dir = args.get("target_dir", "").strip()
+        name = args.get("name", "").strip()
+        if not url:
+            raise ValueError("Repository URL is required for clone.")
+        if not target_dir:
+            # Default target directory
+            repo_base = url.rstrip("/").split("/")[-1].replace(".git", "")
+            base_projects = os.path.join(os.path.expanduser("~"), "DevSyncProjects")
+            target_dir = os.path.join(base_projects, repo_base)
+
+        norm_target = os.path.normpath(os.path.abspath(target_dir))
+        if os.path.exists(norm_target) and os.listdir(norm_target):
+            raise ValueError(f"Target folder is not empty: {norm_target}")
+
+        # Inject PAT token if available for seamless private/public clone
+        token = self.keyring_auth.get_token()
+        clone_url = url
+        if token and "github.com" in url.lower() and "@" not in url:
+            clone_url = url.replace("https://github.com", f"https://x-access-token:{token}@github.com")
+
+        t0 = time.time()
+        res = self.git_ops.clone_repo(clone_url, norm_target)
+        dur = int((time.time() - t0) * 1000)
+
+        if res.get("success"):
+            # Set remote url to clean URL without token
+            self.git_ops.set_remote_url(norm_target, "origin", url)
+            info = self.repo_inspector.inspect(norm_target)
+            proj_name = name or os.path.basename(norm_target)
+            default_b = info.get("current_branch") or "main"
+
+            proj = self.project_store.add_project(
+                name=proj_name,
+                local_path=norm_target,
+                git_remote=url,
+                default_branch=default_b,
+            )
+            self.activity_store.log_operation(
+                op_type="clone",
+                status="success",
+                project_id=proj["id"],
+                duration_ms=dur,
+                details={"url": url, "path": norm_target, "name": proj_name},
+            )
+            res["project"] = proj
+        else:
+            self.activity_store.log_operation(
+                op_type="clone",
+                status="failed",
+                duration_ms=dur,
+                details={"url": url, "path": norm_target},
+                error_message=res.get("error"),
+            )
+        return res
+
     def _cmd_git_init(self, args: Dict[str, Any]) -> Any:
         path = args.get("path")
         proj_id = args.get("project_id")
@@ -358,12 +415,85 @@ class Dispatcher:
     def _cmd_github_list_repos(self, args: Dict[str, Any]) -> Any:
         return self.github_client.list_repositories()
 
+    def _cmd_github_repositories(self, args: Dict[str, Any]) -> Any:
+        """Returns GitHub repositories enriched with local cloned project status."""
+        gh_res = self.github_client.list_repositories(per_page=100)
+        if not gh_res.get("success"):
+            return {"success": False, "error": gh_res.get("error"), "repositories": []}
+
+        local_projects = self.project_store.list_projects()
+        # Map remote URLs and project names to local project records
+        local_by_remote = {}
+        local_by_name = {}
+        for p in local_projects:
+            remote = (p.get("git_remote") or "").lower().rstrip("/").replace(".git", "")
+            if remote:
+                local_by_remote[remote] = p
+            local_by_name[p["name"].lower()] = p
+
+        base_projects_dir = os.path.join(os.path.expanduser("~"), "DevSyncProjects")
+        enriched_repos = []
+
+        for r in gh_res.get("repositories", []):
+            clone_clean = r["clone_url"].lower().rstrip("/").replace(".git", "")
+            html_clean = r["html_url"].lower().rstrip("/").replace(".git", "")
+            matched_local = local_by_remote.get(clone_clean) or local_by_remote.get(html_clean) or local_by_name.get(r["name"].lower())
+
+            rec_path = os.path.join(base_projects_dir, r["name"])
+
+            if matched_local:
+                info = self.repo_inspector.inspect(matched_local["local_path"])
+                enriched_repos.append({
+                    "name": r["name"],
+                    "full_name": r["full_name"],
+                    "html_url": r["html_url"],
+                    "clone_url": r["clone_url"],
+                    "private": r["private"],
+                    "description": r["description"],
+                    "stargazers_count": r["stargazers_count"],
+                    "is_cloned": True,
+                    "project_id": matched_local["id"],
+                    "local_path": matched_local["local_path"],
+                    "status": info.get("status", "Synced"),
+                    "current_branch": info.get("current_branch", "main"),
+                    "ahead": info.get("ahead", 0),
+                    "behind": info.get("behind", 0),
+                    "uncommitted_count": info.get("uncommitted_count", 0),
+                })
+            else:
+                enriched_repos.append({
+                    "name": r["name"],
+                    "full_name": r["full_name"],
+                    "html_url": r["html_url"],
+                    "clone_url": r["clone_url"],
+                    "private": r["private"],
+                    "description": r["description"],
+                    "stargazers_count": r["stargazers_count"],
+                    "is_cloned": False,
+                    "project_id": None,
+                    "local_path": rec_path,
+                    "status": "Remote on GitHub",
+                    "current_branch": r["default_branch"],
+                    "ahead": 0,
+                    "behind": 0,
+                    "uncommitted_count": 0,
+                })
+
+        return {
+            "success": True,
+            "repositories": enriched_repos,
+            "total_remote": len(enriched_repos),
+            "total_cloned": sum(1 for x in enriched_repos if x["is_cloned"]),
+        }
+
     def _cmd_github_create_repo(self, args: Dict[str, Any]) -> Any:
         name = args.get("name", "")
         desc = args.get("description", "")
         private = bool(args.get("private", True))
         auto_init = bool(args.get("auto_init", False))
-        return self.github_client.create_repository(name, desc, private, auto_init)
+        gitignore = args.get("gitignore_template")
+        license_tpl = args.get("license_template")
+        return self.github_client.create_repository(name, desc, private, auto_init, gitignore, license_tpl)
 
     def _cmd_github_link_repo(self, args: Dict[str, Any]) -> Any:
         proj_id = args.get("project_id")

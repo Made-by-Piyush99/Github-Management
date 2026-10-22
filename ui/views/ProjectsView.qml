@@ -8,12 +8,25 @@ ScrollView {
 
     property string filterQuery: ""
     property string statusFilter: "all" // all, git, modified, pinned
+    property var githubRepos: []
 
     signal openProject(string projectId)
     signal refreshRequested()
 
     contentWidth: availableWidth
     clip: true
+
+    function loadGitHubRepos() {
+        backendBridge.sendRequest("github.repositories", {}, function(success, data) {
+            if (success && data && data.repositories) {
+                root.githubRepos = data.repositories;
+            }
+        });
+    }
+
+    Component.onCompleted: {
+        loadGitHubRepos();
+    }
 
     ColumnLayout {
         width: parent.width
@@ -34,7 +47,7 @@ ScrollView {
                     font.weight: Font.Bold
                 }
                 Text {
-                    text: "Manage registered projects, initialize repositories, and link to GitHub."
+                    text: "Manage registered projects, clone from GitHub, or initialize local repositories."
                     color: themeManager.textSecondary
                     font.pixelSize: 12
                 }
@@ -45,7 +58,7 @@ ScrollView {
             ActionButton {
                 text: "Add Local Folder"
                 iconText: "📂"
-                btnStyle: "primary"
+                btnStyle: "secondary"
                 onClicked: {
                     var folder = backendBridge.selectFolder("Choose Project Directory", "");
                     if (folder) {
@@ -58,6 +71,16 @@ ScrollView {
                             }
                         });
                     }
+                }
+            }
+
+            ActionButton {
+                text: "Clone from GitHub"
+                iconText: "📥"
+                btnStyle: "primary"
+                onClicked: {
+                    // Navigate to Repositories tab or GitHub tab to clone
+                    appWindow.activeTab = 2; // Repositories view
                 }
             }
         }
@@ -98,6 +121,7 @@ ScrollView {
 
         // Project List
         ListView {
+            visible: projectModel.count > 0
             Layout.fillWidth: true
             implicitHeight: contentHeight
             interactive: false
@@ -115,7 +139,6 @@ ScrollView {
 
                 property var pData: projectModel.get(index)
 
-                // Filter logic
                 visible: {
                     if (root.statusFilter === "git" && !pData.is_git_repo) return false;
                     if (root.statusFilter === "modified" && (pData.uncommitted_count || 0) === 0) return false;
@@ -162,7 +185,6 @@ ScrollView {
 
                         Item { Layout.fillWidth: true }
 
-                        // Initialize Git button if not a git repo
                         ActionButton {
                             visible: !pData.is_git_repo
                             text: "Initialize Git"
@@ -189,7 +211,6 @@ ScrollView {
                             }
                         }
 
-                        // Pin/Unpin
                         ActionButton {
                             text: pData.is_pinned ? "Unpin" : "Pin"
                             iconText: "📌"
@@ -202,7 +223,6 @@ ScrollView {
                             }
                         }
 
-                        // Remove from App (Safe Removal)
                         ActionButton {
                             text: "Remove"
                             iconText: "🗑️"
@@ -256,6 +276,100 @@ ScrollView {
                             text: pData.current_branch ? ("Branch: " + pData.current_branch) : "No branch"
                             color: themeManager.textSecondary
                             font.pixelSize: 11
+                        }
+                    }
+                }
+            }
+        }
+
+        // Quick Clone Prompt if 0 local projects but GitHub has repos
+        Rectangle {
+            visible: projectModel.count === 0 && root.githubRepos.length > 0
+            Layout.fillWidth: true
+            implicitHeight: ghPromptCol.implicitHeight + 36
+            radius: 8
+            color: themeManager.bgCard
+            border.color: themeManager.borderPrimary
+            border.width: 1
+
+            ColumnLayout {
+                id: ghPromptCol
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 12
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Text { text: "🐙"; font.pixelSize: 20 }
+                    Text {
+                        text: "Repositories Available on GitHub (" + root.githubRepos.length + ")"
+                        color: themeManager.textPrimary
+                        font.pixelSize: 15
+                        font.weight: Font.Bold
+                    }
+                    Item { Layout.fillWidth: true }
+                }
+
+                Text {
+                    text: "You are connected to GitHub! Click 'Clone to Local' on any repository below to add it directly to your workspace."
+                    color: themeManager.textSecondary
+                    font.pixelSize: 12
+                }
+
+                Repeater {
+                    model: root.githubRepos
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 48
+                        radius: 6
+                        color: themeManager.bgPrimary
+                        border.color: themeManager.borderPrimary
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 14
+                            anchors.rightMargin: 14
+                            spacing: 10
+
+                            Text { text: "📦"; font.pixelSize: 13 }
+                            Text {
+                                text: modelData.name
+                                color: themeManager.textPrimary
+                                font.pixelSize: 13
+                                font.weight: Font.Medium
+                            }
+                            Text {
+                                visible: !!modelData.description
+                                text: "• " + modelData.description
+                                color: themeManager.textMuted
+                                font.pixelSize: 11
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                            Item { visible: !modelData.description; Layout.fillWidth: true }
+
+                            ActionButton {
+                                text: "Clone to Local"
+                                iconText: "📥"
+                                btnStyle: "primary"
+                                small: true
+                                onClicked: {
+                                    var target = "D:/DevSyncProjects/" + modelData.name;
+                                    toast.show("Cloning " + modelData.name + "...", "info");
+                                    backendBridge.sendRequest("git.clone", {"url": modelData.clone_url, "target_dir": target, "name": modelData.name}, function(success, data, err) {
+                                        if (success) {
+                                            toast.show("Cloned " + modelData.name + " into workspace!", "success");
+                                            root.refreshRequested();
+                                        } else {
+                                            toast.show("Clone failed: " + err, "error");
+                                        }
+                                    });
+                                }
+                            }
                         }
                     }
                 }

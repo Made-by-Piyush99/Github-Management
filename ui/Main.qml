@@ -16,7 +16,8 @@ ApplicationWindow {
 
     color: themeManager.bgPrimary
 
-    property int activeTab: 0 // 0: Dashboard, 1: Projects, 2: Repos, 3: Branches, 4: Changes, 5: Activity, 6: GitHub, 7: Settings, 8: Project Details
+    // 0: Dashboard, 1: Projects, 2: Repos, 3: Branches, 4: Changes, 5: Activity, 6: GitHub, 7: Guide & Info, 8: Settings, 9: Project Details
+    property int activeTab: 0
     property string activeDetailProjectId: ""
     property string searchQuery: ""
     property var githubUser: null
@@ -44,7 +45,22 @@ ApplicationWindow {
 
     function openProjectDetails(pId) {
         activeDetailProjectId = pId;
-        activeTab = 8; // Project detail view
+        activeTab = 9; // Project detail view
+    }
+
+    function openCreateRepoDialog() {
+        var owner = appWindow.githubUser ? appWindow.githubUser.login : "owner";
+        createRepoDialog.open(owner);
+    }
+
+    function checkTourOnStartup() {
+        backendBridge.sendRequest("settings.get_all", {}, function(success, data) {
+            if (success && data) {
+                if (!data.tour_completed) {
+                    appTourDialog.open();
+                }
+            }
+        });
     }
 
     // Auto-refresh timer (default 30 seconds)
@@ -62,6 +78,7 @@ ApplicationWindow {
         function onReadyReceived() {
             toast.show("Connected to DevSync backend.", "success");
             appWindow.refreshAll();
+            appWindow.checkTourOnStartup();
         }
         function onTaskProgress(taskId, percent, msg) {
             toast.show(msg, "info");
@@ -70,6 +87,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         appWindow.refreshAll();
+        appWindow.checkTourOnStartup();
     }
 
     // Keyboard Shortcuts
@@ -87,7 +105,7 @@ ApplicationWindow {
         Sidebar {
             id: sidebar
             Layout.fillHeight: true
-            activeTab: appWindow.activeTab === 8 ? 0 : appWindow.activeTab
+            activeTab: appWindow.activeTab === 9 ? 0 : appWindow.activeTab
             gitVersion: "Git 2.x"
             backendConnected: backendBridge.isConnected
             onTabSelected: function(idx) {
@@ -113,8 +131,9 @@ ApplicationWindow {
                     if (appWindow.activeTab === 4) return "Changes & Commits";
                     if (appWindow.activeTab === 5) return "Activity & Reports";
                     if (appWindow.activeTab === 6) return "GitHub Integration";
-                    if (appWindow.activeTab === 7) return "Settings";
-                    if (appWindow.activeTab === 8) return "Project Details";
+                    if (appWindow.activeTab === 7) return "Guide & Info";
+                    if (appWindow.activeTab === 8) return "Settings";
+                    if (appWindow.activeTab === 9) return "Project Details";
                     return "DevSync Studio";
                 }
                 githubUser: appWindow.githubUser
@@ -139,7 +158,9 @@ ApplicationWindow {
                         appWindow.openProjectDetails(pId);
                     }
                     onRequestQuickAction: function(act, proj) {
-                        if (act === "folder") {
+                        if (act === "refresh_all") {
+                            appWindow.refreshAll();
+                        } else if (act === "folder") {
                             backendBridge.openFolder(proj.local_path);
                         } else if (act === "changes") {
                             appWindow.openProjectDetails(proj.id);
@@ -209,10 +230,20 @@ ApplicationWindow {
                     onGithubStatusChanged: appWindow.refreshAll()
                 }
 
-                // 7: Settings
+                // 7: Guide & Info
+                InfoView {
+                    onRequestAppTour: function() {
+                        appTourDialog.open();
+                    }
+                    onNavigateToTab: function(tabIndex) {
+                        appWindow.activeTab = tabIndex;
+                    }
+                }
+
+                // 8: Settings
                 SettingsView {}
 
-                // 8: Project Details Sub-page
+                // 9: Project Details Sub-page
                 ProjectDetailView {
                     projectId: appWindow.activeDetailProjectId
                     onBackRequested: appWindow.activeTab = 0
@@ -220,6 +251,42 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // Modern GitHub-like Create Repository Dialog
+    CreateRepoDialog {
+        id: createRepoDialog
+        onRepositoryCreated: function(repo) {
+            toast.show("Created repository: " + repo.full_name, "success");
+            appWindow.refreshAll();
+            // Prompt to clone locally
+            confirmDialog.open(
+                "Repository Created",
+                "Repository '" + repo.name + "' has been created on GitHub!\nWould you like to clone it into your local workspace now?",
+                function() {
+                    var target = "D:/DevSyncProjects/" + repo.name;
+                    toast.show("Cloning " + repo.name + "...", "info");
+                    backendBridge.sendRequest("git.clone", {"url": repo.clone_url, "target_dir": target, "name": repo.name}, function(s, d, err) {
+                        if (s) {
+                            toast.show("Cloned " + repo.name + " into workspace!", "success");
+                            appWindow.refreshAll();
+                            appWindow.activeTab = 0; // Go to dashboard
+                        } else {
+                            toast.show("Clone failed: " + err, "error");
+                        }
+                    });
+                },
+                "primary",
+                "Clone to Workspace"
+            );
+        }
+    }
+
+    // App Onboarding Tour Dialog (with Skip option)
+    AppTourDialog {
+        id: appTourDialog
+        onTourCompleted: toast.show("Tour completed! Enjoy using DevSync Studio.", "success")
+        onTourSkipped: toast.show("Tour skipped. You can reopen it anytime from Guide & Info.", "info")
     }
 
     // Global Modal Confirmation Dialog

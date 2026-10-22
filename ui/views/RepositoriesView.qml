@@ -7,11 +7,54 @@ ScrollView {
     id: root
 
     property string filterText: ""
+    property string activeFilter: "all" // all, cloned, remote
+    property var repoList: []
+    property bool loading: false
+
     signal openProject(string projectId)
     signal refreshRequested()
 
     contentWidth: availableWidth
     clip: true
+
+    function loadRepositories() {
+        loading = true;
+        backendBridge.sendRequest("github.repositories", {}, function(success, data, err) {
+            loading = false;
+            if (success && data && data.repositories) {
+                repoList = data.repositories;
+            } else {
+                // If GitHub is not connected or error, fall back to local projectModel
+                var list = [];
+                for (var i = 0; i < projectModel.count; ++i) {
+                    var p = projectModel.get(i);
+                    if (p.is_git_repo) {
+                        list.push({
+                            "name": p.name,
+                            "full_name": p.name,
+                            "html_url": p.git_remote || "",
+                            "clone_url": p.git_remote || "",
+                            "private": false,
+                            "description": "",
+                            "stargazers_count": 0,
+                            "is_cloned": true,
+                            "project_id": p.id,
+                            "local_path": p.local_path,
+                            "status": p.status || "Unknown",
+                            "current_branch": p.current_branch || "main",
+                            "ahead": p.ahead || 0,
+                            "behind": p.behind || 0,
+                        });
+                    }
+                }
+                repoList = list;
+            }
+        });
+    }
+
+    Component.onCompleted: {
+        loadRepositories();
+    }
 
     ColumnLayout {
         width: parent.width
@@ -32,35 +75,110 @@ ScrollView {
                     font.weight: Font.Bold
                 }
                 Text {
-                    text: "Inspect remote tracking, perform fetch, pull, and push operations safely."
+                    text: "Manage local repositories and remote GitHub repositories with 1-click clone and sync."
                     color: themeManager.textSecondary
                     font.pixelSize: 12
                 }
             }
 
             Item { Layout.fillWidth: true }
+
+            ActionButton {
+                text: "Refresh"
+                iconText: "🔄"
+                btnStyle: "subtle"
+                busy: root.loading
+                onClicked: {
+                    root.loadRepositories();
+                    root.refreshRequested();
+                }
+            }
         }
 
-        // Repositories Table / Card List
-        ListView {
+        // Filter Pills
+        RowLayout {
             Layout.fillWidth: true
-            implicitHeight: contentHeight
-            interactive: false
-            spacing: 12
-            model: projectModel
+            spacing: 8
 
-            delegate: Rectangle {
+            ActionButton {
+                text: "All Repositories (" + root.repoList.length + ")"
+                btnStyle: root.activeFilter === "all" ? "primary" : "subtle"
+                small: true
+                onClicked: root.activeFilter = "all"
+            }
+
+            ActionButton {
+                text: "Local / Cloned"
+                btnStyle: root.activeFilter === "cloned" ? "primary" : "subtle"
+                small: true
+                onClicked: root.activeFilter = "cloned"
+            }
+
+            ActionButton {
+                text: "Remote on GitHub"
+                btnStyle: root.activeFilter === "remote" ? "primary" : "subtle"
+                small: true
+                onClicked: root.activeFilter = "remote"
+            }
+        }
+
+        // Empty state when no repos found
+        Rectangle {
+            visible: root.repoList.length === 0 && !root.loading
+            Layout.fillWidth: true
+            height: 200
+            radius: 8
+            color: themeManager.bgCard
+            border.color: themeManager.borderPrimary
+            border.width: 1
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 10
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "📦"
+                    font.pixelSize: 32
+                }
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "No repositories detected"
+                    color: themeManager.textPrimary
+                    font.pixelSize: 15
+                    font.weight: Font.Bold
+                }
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Connect your GitHub account in the GitHub tab or add a local folder to view repositories."
+                    color: themeManager.textSecondary
+                    font.pixelSize: 12
+                }
+            }
+        }
+
+        // Repositories List
+        Repeater {
+            model: root.repoList
+
+            Rectangle {
                 id: repoCard
-                width: ListView.view.width
+                Layout.fillWidth: true
                 implicitHeight: repoCol.implicitHeight + 28
                 radius: 8
                 color: themeManager.bgCard
                 border.color: themeManager.borderPrimary
                 border.width: 1
 
-                property var pData: projectModel.get(index)
+                property var rData: modelData
 
-                visible: pData.is_git_repo
+                visible: {
+                    if (root.activeFilter === "cloned" && !rData.is_cloned) return false;
+                    if (root.activeFilter === "remote" && rData.is_cloned) return false;
+                    if (!root.filterText) return true;
+                    var q = root.filterText.toLowerCase();
+                    return (rData.name || "").toLowerCase().indexOf(q) !== -1 || (rData.full_name || "").toLowerCase().indexOf(q) !== -1;
+                }
 
                 ColumnLayout {
                     id: repoCol
@@ -73,49 +191,70 @@ ScrollView {
                         spacing: 10
 
                         Text {
-                            text: "📦"
+                            text: rData.is_cloned ? "📦" : "☁️"
                             font.pixelSize: 16
                         }
 
-                        Text {
-                            text: pData.name
-                            color: themeManager.textPrimary
-                            font.pixelSize: 15
-                            font.weight: Font.Bold
+                        Column {
+                            spacing: 2
+                            Text {
+                                text: rData.full_name || rData.name
+                                color: themeManager.textPrimary
+                                font.pixelSize: 15
+                                font.weight: Font.Bold
+                            }
+                            Text {
+                                visible: !!rData.description
+                                text: rData.description
+                                color: themeManager.textMuted
+                                font.pixelSize: 11
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 400
+                            }
                         }
 
                         StatusBadge {
-                            status: pData.status || "Unknown"
+                            status: rData.status || (rData.is_cloned ? "Synced" : "Remote on GitHub")
                             small: true
                         }
 
                         Item { Layout.fillWidth: true }
 
+                        // If not cloned: Show 1-Click Clone Button
                         ActionButton {
-                            visible: !!pData.git_remote
-                            text: "Open GitHub"
-                            iconText: "↗️"
-                            btnStyle: "subtle"
+                            visible: !rData.is_cloned
+                            text: "Clone to Local"
+                            iconText: "📥"
+                            btnStyle: "primary"
                             small: true
                             onClicked: {
-                                var url = pData.git_remote;
-                                if (url.startsWith("git@github.com:")) {
-                                    url = "https://github.com/" + url.substring(15).replace(".git", "");
-                                }
-                                backendBridge.openUrl(url);
+                                var target = "D:/DevSyncProjects/" + rData.name;
+                                toast.show("Cloning " + rData.name + "...", "info");
+                                backendBridge.sendRequest("git.clone", {"url": rData.clone_url, "target_dir": target, "name": rData.name}, function(success, data, err) {
+                                    if (success) {
+                                        toast.show("Cloned " + rData.name + " to " + target, "success");
+                                        root.loadRepositories();
+                                        root.refreshRequested();
+                                    } else {
+                                        toast.show("Clone failed: " + err, "error");
+                                    }
+                                });
                             }
                         }
 
+                        // If cloned: Show Fetch / Pull / Push actions
                         ActionButton {
+                            visible: !!rData.is_cloned
                             text: "Fetch"
                             iconText: "🔄"
                             btnStyle: "secondary"
                             small: true
                             onClicked: {
                                 toast.show("Fetching remote changes...", "info");
-                                backendBridge.sendRequest("git.fetch", {"path": pData.local_path, "project_id": pData.id}, function(success, data, err) {
+                                backendBridge.sendRequest("git.fetch", {"path": rData.local_path, "project_id": rData.project_id}, function(success, data, err) {
                                     if (success) {
                                         toast.show("Fetch completed.", "success");
+                                        root.loadRepositories();
                                         root.refreshRequested();
                                     } else {
                                         toast.show("Fetch failed: " + err, "error");
@@ -125,19 +264,17 @@ ScrollView {
                         }
 
                         ActionButton {
+                            visible: !!rData.is_cloned
                             text: "Pull"
                             iconText: "⬇️"
                             btnStyle: "secondary"
                             small: true
                             onClicked: {
                                 toast.show("Pulling from remote...", "info");
-                                backendBridge.sendRequest("git.pull", {"path": pData.local_path, "project_id": pData.id}, function(success, data, err) {
+                                backendBridge.sendRequest("git.pull", {"path": rData.local_path, "project_id": rData.project_id}, function(success, data, err) {
                                     if (success) {
-                                        if (data && data.is_conflict) {
-                                            toast.show("Merge conflict encountered! Please check files.", "warning");
-                                        } else {
-                                            toast.show("Pull completed successfully.", "success");
-                                        }
+                                        toast.show("Pull completed successfully.", "success");
+                                        root.loadRepositories();
                                         root.refreshRequested();
                                     } else {
                                         toast.show("Pull failed: " + err, "error");
@@ -147,15 +284,17 @@ ScrollView {
                         }
 
                         ActionButton {
+                            visible: !!rData.is_cloned
                             text: "Push"
                             iconText: "⬆️"
                             btnStyle: "primary"
                             small: true
                             onClicked: {
                                 toast.show("Pushing commits to remote...", "info");
-                                backendBridge.sendRequest("git.push", {"path": pData.local_path, "project_id": pData.id}, function(success, data, err) {
+                                backendBridge.sendRequest("git.push", {"path": rData.local_path, "project_id": rData.project_id}, function(success, data, err) {
                                     if (success) {
                                         toast.show("Push completed successfully.", "success");
+                                        root.loadRepositories();
                                         root.refreshRequested();
                                     } else {
                                         toast.show("Push failed: " + err, "error");
@@ -163,32 +302,41 @@ ScrollView {
                                 });
                             }
                         }
+
+                        ActionButton {
+                            visible: !!rData.html_url
+                            text: "Open GitHub"
+                            iconText: "↗️"
+                            btnStyle: "subtle"
+                            small: true
+                            onClicked: backendBridge.openUrl(rData.html_url)
+                        }
                     }
 
                     // Metadata details
-                    GridLayout {
+                    RowLayout {
                         Layout.fillWidth: true
-                        columns: 3
-                        rowSpacing: 6
-                        columnSpacing: 16
+                        spacing: 16
 
                         Text {
-                            text: "Local Branch: " + (pData.current_branch || "None")
-                            color: themeManager.textSecondary
-                            font.pixelSize: 12
-                        }
-
-                        Text {
-                            text: "Remote URL: " + (pData.git_remote || "No remote configured")
-                            color: pData.git_remote ? themeManager.accent : themeManager.textMuted
-                            font.pixelSize: 12
+                            text: rData.is_cloned ? ("📁 Local Path: " + rData.local_path) : "☁️ Remote Only (Not cloned to local disk)"
+                            color: themeManager.textMuted
+                            font.pixelSize: 11
                             elide: Text.ElideMiddle
+                            Layout.fillWidth: true
                         }
 
                         Text {
-                            text: "Sync: " + (pData.ahead || 0) + " ahead, " + (pData.behind || 0) + " behind"
+                            text: "🌿 Branch: " + (rData.current_branch || "main")
                             color: themeManager.textSecondary
-                            font.pixelSize: 12
+                            font.pixelSize: 11
+                        }
+
+                        Text {
+                            visible: !!rData.is_cloned
+                            text: "Sync: " + (rData.ahead || 0) + " ahead, " + (rData.behind || 0) + " behind"
+                            color: themeManager.textSecondary
+                            font.pixelSize: 11
                         }
                     }
                 }
