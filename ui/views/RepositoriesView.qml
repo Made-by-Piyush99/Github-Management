@@ -173,10 +173,32 @@ ScrollView {
                 id: repoCard
                 Layout.fillWidth: true
                 implicitHeight: repoCol.implicitHeight + 28
-                radius: 8
-                color: themeManager.bgCard
-                border.color: themeManager.borderPrimary
+                radius: 10
+                color: repoMouse.containsMouse ? themeManager.bgCardHover : (themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.7) : themeManager.bgCard)
+                border.color: repoMouse.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.4) : themeManager.borderPrimary
                 border.width: 1
+
+                Behavior on color { ColorAnimation { duration: 120 } }
+                Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                MouseArea {
+                    id: repoMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
+                }
+
+                // Top edge subtle glow
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 1
+                    height: 1
+                    radius: 10
+                    color: repoMouse.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.3) : Qt.rgba(255, 255, 255, 0.05)
+                    visible: themeManager.isDark
+                }
 
                 property var rData: modelData
 

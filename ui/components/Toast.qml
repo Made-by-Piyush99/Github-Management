@@ -39,18 +39,13 @@ Item {
         Behavior on anchors.bottomMargin { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
 
-        color: {
-            if (root.type === "success") return themeManager.isDark ? "#143D24" : "#DCFCE7";
-            if (root.type === "error") return themeManager.isDark ? "#3D1414" : "#FEE2E2";
-            if (root.type === "warning") return themeManager.isDark ? "#3D2B14" : "#FEF3C7";
-            return themeManager.bgCard;
-        }
+        color: themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.96) : themeManager.bgCard
 
         border.color: {
             if (root.type === "success") return themeManager.success;
             if (root.type === "error") return themeManager.danger;
             if (root.type === "warning") return themeManager.warning;
-            return themeManager.borderPrimary;
+            return themeManager.borderSecondary;
         }
         border.width: 1
 
@@ -58,14 +53,15 @@ Item {
             anchors.centerIn: parent
             spacing: 8
 
-            Text {
-                text: {
-                    if (root.type === "success") return "✅";
-                    if (root.type === "error") return "⚠️";
-                    if (root.type === "warning") return "⚡";
-                    return "ℹ️";
+            AppIcon {
+                name: root.type === "success" ? "check" : (root.type === "error" ? "shield" : "guide")
+                size: 14
+                color: {
+                    if (root.type === "success") return themeManager.success;
+                    if (root.type === "error") return themeManager.danger;
+                    if (root.type === "warning") return themeManager.warning;
+                    return themeManager.accent;
                 }
-                font.pixelSize: 14
                 anchors.verticalCenter: parent.verticalCenter
             }
 

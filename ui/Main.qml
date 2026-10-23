@@ -53,6 +53,10 @@ ApplicationWindow {
         createRepoDialog.open(owner);
     }
 
+    function openUploadProjectDialog(proj) {
+        uploadProjectDialog.open(proj);
+    }
+
     function checkTourOnStartup() {
         backendBridge.sendRequest("settings.get_all", {}, function(success, data) {
             if (success && data) {
@@ -96,6 +100,11 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+R"
         onActivated: appWindow.refreshAll()
+    }
+
+    Shortcut {
+        sequence: "Ctrl+K"
+        onActivated: topBar.focusSearch()
     }
 
     // Main App Layout: Sidebar on Left, Content on Right
@@ -177,12 +186,19 @@ ApplicationWindow {
                                 if (s) { toast.show("Pull completed.", "success"); appWindow.refreshAll(); }
                                 else toast.show("Pull failed: " + err, "error");
                             });
-                        } else if (act === "push") {
-                            toast.show("Pushing changes...", "info");
-                            backendBridge.sendRequest("git.push", {"path": proj.local_path, "project_id": proj.id}, function(s, d, err) {
-                                if (s) { toast.show("Push completed.", "success"); appWindow.refreshAll(); }
-                                else toast.show("Push failed: " + err, "error");
-                            });
+                        } else if (act === "push" || act === "upload") {
+                            if (!proj.git_remote || proj.git_remote === "") {
+                                appWindow.openUploadProjectDialog(proj);
+                            } else {
+                                toast.show("Pushing changes...", "info");
+                                backendBridge.sendRequest("git.push", {"path": proj.local_path, "project_id": proj.id}, function(s, d, err) {
+                                    if (s) { toast.show("Push completed.", "success"); appWindow.refreshAll(); }
+                                    else {
+                                        toast.show("Push failed: " + err, "error");
+                                        appWindow.openUploadProjectDialog(proj);
+                                    }
+                                });
+                            }
                         } else if (act === "branch") {
                             appWindow.activeTab = 3;
                         } else if (act === "add_project") {
@@ -284,6 +300,14 @@ ApplicationWindow {
                 "primary",
                 "Clone to Workspace"
             );
+        }
+    }
+
+    // Modern Upload Full Project to GitHub Dialog
+    UploadProjectDialog {
+        id: uploadProjectDialog
+        onUploadCompleted: function(proj, res) {
+            appWindow.refreshAll();
         }
     }
 

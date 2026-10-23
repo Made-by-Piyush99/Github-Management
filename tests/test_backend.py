@@ -218,3 +218,16 @@ def test_dispatcher(temp_dir, temp_db):
     sys_info = disp.dispatch("system.info", {})
     assert sys_info["app_name"] == "DevSync Studio"
     assert "git version" in sys_info["git_version"].lower()
+
+
+def test_upload_to_github_validation(temp_dir, temp_db):
+    disp = Dispatcher(temp_db.db_path)
+    disp.keyring_auth.get_token = lambda: None
+    proj_dir = os.path.join(temp_dir, "upload_proj")
+    os.makedirs(proj_dir, exist_ok=True)
+    proj = disp.dispatch("projects.add", {"path": proj_dir, "name": "Upload Proj"})
+
+    # Should raise error when no token configured
+    with pytest.raises(ValueError, match="No GitHub token"):
+        disp.dispatch("projects.upload_to_github", {"project_id": proj["id"]})
+

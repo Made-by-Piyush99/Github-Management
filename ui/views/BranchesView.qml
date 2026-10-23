@@ -72,7 +72,7 @@ ScrollView {
             Item { Layout.fillWidth: true }
 
             // Project Selector Combo
-            ComboBox {
+            StyledComboBox {
                 id: projCombo
                 Layout.preferredWidth: 220
                 model: projectModel
@@ -135,12 +135,25 @@ ScrollView {
                 model: root.branchesData.local || []
 
                 Rectangle {
+                    id: branchItem
                     Layout.fillWidth: true
                     height: 52
-                    radius: 6
-                    color: modelData.is_current ? themeManager.accentMuted : themeManager.bgCard
-                    border.color: modelData.is_current ? themeManager.accent : themeManager.borderPrimary
+                    radius: 8
+                    color: modelData.is_current
+                           ? (themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.12) : themeManager.accentMuted)
+                           : (branchMouse.containsMouse ? themeManager.bgCardHover : (themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.7) : themeManager.bgCard))
+                    border.color: modelData.is_current ? themeManager.accent : (branchMouse.containsMouse ? themeManager.borderSecondary : themeManager.borderPrimary)
                     border.width: 1
+
+                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                    MouseArea {
+                        id: branchMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+                    }
 
                     RowLayout {
                         anchors.fill: parent

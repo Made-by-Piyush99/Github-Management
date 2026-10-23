@@ -4,6 +4,7 @@ Maintains activity logging and execution timing for all operations.
 """
 
 import os
+import re
 import time
 import logging
 from typing import Dict, Any, Optional
@@ -342,6 +343,17 @@ class Dispatcher:
         proj_id = args.get("project_id")
         remote = args.get("remote", "origin")
         branch = args.get("branch")
+
+        # Auto-inject PAT token if authenticated to GitHub
+        token = self.keyring_auth.get_token()
+        if token and path and os.path.exists(path):
+            rem_res = self.git_cli.run(["remote", "get-url", remote], cwd=path)
+            if rem_res.ok:
+                cur_url = rem_res.stdout.strip()
+                if "github.com" in cur_url.lower() and "@" not in cur_url:
+                    auth_url = cur_url.replace("https://github.com", f"https://x-access-token:{token}@github.com")
+                    self.git_cli.run(["remote", "set-url", remote, auth_url], cwd=path)
+
         t0 = time.time()
         res = self.git_ops.pull(path, remote, branch)
         dur = int((time.time() - t0) * 1000)
@@ -362,6 +374,17 @@ class Dispatcher:
         remote = args.get("remote", "origin")
         branch = args.get("branch")
         set_upstream = bool(args.get("set_upstream", False))
+
+        # Auto-inject PAT token if authenticated to GitHub
+        token = self.keyring_auth.get_token()
+        if token and path and os.path.exists(path):
+            rem_res = self.git_cli.run(["remote", "get-url", remote], cwd=path)
+            if rem_res.ok:
+                cur_url = rem_res.stdout.strip()
+                if "github.com" in cur_url.lower() and "@" not in cur_url:
+                    auth_url = cur_url.replace("https://github.com", f"https://x-access-token:{token}@github.com")
+                    self.git_cli.run(["remote", "set-url", remote, auth_url], cwd=path)
+
         t0 = time.time()
         res = self.git_ops.push(path, remote, branch, set_upstream)
         dur = int((time.time() - t0) * 1000)
@@ -514,6 +537,172 @@ class Dispatcher:
         if res.get("success"):
             self.project_store.update_project(proj_id, git_remote=remote_url)
         return res
+
+    def _cmd_projects_upload_to_github(self, args: Dict[str, Any]) -> Any:
+        proj_id = args.get("project_id")
+        if not proj_id:
+            raise ValueError("project_id is required.")
+
+        proj = self.project_store.get_project(proj_id)
+        if not proj:
+            raise ValueError(f"Project with ID '{proj_id}' not found.")
+
+        local_path = os.path.normpath(proj["local_path"])
+        if not os.path.exists(local_path):
+            raise FileNotFoundError(f"Project directory not found on disk: {local_path}")
+
+        token = self.keyring_auth.get_token()
+        if not token:
+            raise ValueError("No GitHub token configured. Please connect your GitHub account in Settings.")
+
+        mode = args.get("mode", "new")
+        branch = (args.get("branch") or proj.get("default_branch") or "main").strip() or "main"
+        commit_message = (args.get("commit_message") or "").strip() or "Initial commit: upload project structure"
+        create_gitignore = bool(args.get("create_gitignore", True))
+
+        # 1. Structure: Ensure .gitignore exists to prevent uploading bulky artifacts
+        gitignore_path = os.path.join(local_path, ".gitignore")
+        if create_gitignore and not os.path.exists(gitignore_path):
+            try:
+                with open(gitignore_path, "w", encoding="utf-8") as f:
+                    f.write(
+                        "# DevSync Studio Generated .gitignore\n"
+                        ".DS_Store\nThumbs.db\ndesktop.ini\n\n"
+                        "# Dependencies & Package Builds\n"
+                        "node_modules/\ndist/\nbuild/\nout/\ntarget/\nbin/\nobj/\n"
+                        "*.exe\n*.dll\n*.so\n*.dylib\n*.obj\n*.o\n*.a\n*.lib\n\n"
+                        "# Python\n__pycache__/\n*.py[cod]\n*$py.class\n.pytest_cache/\n.venv/\nvenv/\nenv/\n\n"
+                        "# IDE & Editors\n.vscode/\n.idea/\n*.swp\n*.swo\n*.suo\n*.user\n\n"
+                        "# Environment & Secret keys\n.env\n.env.*\n*.log\n"
+                    )
+            except Exception as e:
+                logger.warning("Could not write .gitignore: %s", e)
+
+        # 2. Ensure Git repository initialized
+        repo_info = self.repo_inspector.inspect(local_path)
+        if not repo_info.get("is_git_repo"):
+            init_res = self.git_ops.init_repo(local_path, default_branch=branch)
+            if not init_res.get("success"):
+                raise RuntimeError(f"Failed to initialize Git repository: {init_res.get('error')}")
+
+        # 3. Ensure Git identity is set so commit doesn't fail
+        name_check = self.git_cli.run(["config", "user.name"], cwd=local_path)
+        if not name_check.ok or not name_check.stdout.strip():
+            user_info = self.github_client.test_connection().get("user") or {}
+            uname = user_info.get("name") or user_info.get("login") or "DevSync User"
+            uemail = f"{user_info.get('login', 'devsync')}@users.noreply.github.com"
+            self.git_cli.run(["config", "user.name", uname], cwd=local_path)
+            self.git_cli.run(["config", "user.email", uemail], cwd=local_path)
+
+        # 4. Stage all files
+        self.git_ops.stage_all(local_path)
+
+        # 5. Check if commits exist; commit if needed
+        has_commit = self.git_cli.run(["rev-parse", "HEAD"], cwd=local_path).ok
+        status_check = self.git_cli.run(["status", "--porcelain"], cwd=local_path)
+        if not has_commit or status_check.stdout.strip():
+            commit_res = self.git_ops.commit(local_path, commit_message)
+            if not commit_res.get("success") and not has_commit:
+                raise RuntimeError(f"Commit failed: {commit_res.get('error')}")
+
+        # 6. Branch name consistency
+        self.git_cli.run(["branch", "-M", branch], cwd=local_path)
+
+        # 7. Provision or resolve GitHub repository
+        target_clone_url = ""
+        html_url = ""
+        repo_name = (args.get("repo_name") or proj["name"]).strip().replace(" ", "-")
+        description = (args.get("description") or "").strip()
+        is_private = bool(args.get("private", True))
+
+        if mode == "new":
+            create_res = self.github_client.create_repository(
+                name=repo_name,
+                description=description,
+                private=is_private,
+                auto_init=False,
+            )
+            if create_res.get("success"):
+                rep_data = create_res["repository"]
+                target_clone_url = rep_data["clone_url"]
+                html_url = rep_data["html_url"]
+            else:
+                err = create_res.get("error", "")
+                conn = self.github_client.test_connection()
+                login = (conn.get("user") or {}).get("login")
+                if login:
+                    target_clone_url = f"https://github.com/{login}/{repo_name}.git"
+                    html_url = f"https://github.com/{login}/{repo_name}"
+                else:
+                    raise RuntimeError(f"Could not create repository on GitHub: {err}")
+        else: # existing
+            target_clone_url = (args.get("remote_url") or "").strip()
+            if not target_clone_url:
+                raise ValueError("remote_url is required when selecting an existing repository.")
+            html_url = target_clone_url.rstrip("/").replace(".git", "")
+
+        # 8. Configure remote with authenticated push credentials
+        authenticated_url = target_clone_url
+        if "github.com" in target_clone_url.lower() and "@" not in target_clone_url:
+            authenticated_url = target_clone_url.replace(
+                "https://github.com", f"https://x-access-token:{token}@github.com"
+            )
+
+        remotes_res = self.git_cli.run(["remote"], cwd=local_path)
+        existing_remotes = [r.strip() for r in remotes_res.stdout.splitlines() if r.strip()]
+        if "origin" in existing_remotes:
+            self.git_cli.run(["remote", "set-url", "origin", authenticated_url], cwd=local_path)
+        else:
+            self.git_cli.run(["remote", "add", "origin", authenticated_url], cwd=local_path)
+
+        # 9. Push project files to remote upstream
+        t0 = time.time()
+        push_res = self.git_cli.run(["push", "-u", "origin", branch], cwd=local_path, timeout=180.0)
+        
+        # If push is rejected because remote contains initial commits
+        if not push_res.ok and ("fetch first" in push_res.stderr or "non-fast-forward" in push_res.stderr or "rejected" in push_res.stderr):
+            self.git_cli.run(["pull", "origin", branch, "--rebase", "--allow-unrelated-histories"], cwd=local_path, timeout=60.0)
+            push_res = self.git_cli.run(["push", "-u", "origin", branch], cwd=local_path, timeout=180.0)
+
+        dur_ms = int((time.time() - t0) * 1000)
+        clean_remote_url = re.sub(r'https?://[^@]+@', 'https://', target_clone_url).rstrip('/').replace('.git', '')
+
+        if not push_res.ok:
+            self.activity_store.log_operation(
+                op_type="upload_to_github",
+                status="failed",
+                project_id=proj_id,
+                duration_ms=dur_ms,
+                details={"repo": clean_remote_url, "branch": branch},
+                error_message=push_res.stderr.strip() or push_res.stdout.strip(),
+            )
+            raise RuntimeError(f"Push to GitHub failed: {push_res.stderr.strip() or push_res.stdout.strip()}")
+
+        # 10. Update project in database
+        self.project_store.update_project(
+            proj_id,
+            git_remote=clean_remote_url,
+            default_branch=branch
+        )
+
+        self.activity_store.log_operation(
+            op_type="upload_to_github",
+            status="success",
+            project_id=proj_id,
+            duration_ms=dur_ms,
+            details={"repo": clean_remote_url, "branch": branch, "html_url": html_url},
+        )
+
+        return {
+            "success": True,
+            "remote_url": clean_remote_url,
+            "html_url": html_url,
+            "branch": branch,
+            "message": f"Full project successfully uploaded and synced to {clean_remote_url}!"
+        }
+
+    def _cmd_github_upload_project(self, args: Dict[str, Any]) -> Any:
+        return self._cmd_projects_upload_to_github(args)
 
     # ==========================
     # Reports & Activity Handlers

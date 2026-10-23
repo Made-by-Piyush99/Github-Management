@@ -66,8 +66,8 @@ Item {
         Rectangle {
             Layout.preferredWidth: 360
             Layout.fillHeight: true
-            radius: 8
-            color: themeManager.bgCard
+            radius: 10
+            color: themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.75) : themeManager.bgCard
             border.color: themeManager.borderPrimary
             border.width: 1
 
@@ -81,7 +81,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 8
 
-                    ComboBox {
+                    StyledComboBox {
                         Layout.fillWidth: true
                         model: projectModel
                         textRole: "name"
@@ -276,10 +276,10 @@ Item {
 
                     Rectangle {
                         Layout.fillWidth: true
-                        height: 64
-                        radius: 6
-                        color: themeManager.bgInput
-                        border.color: commitInput.activeFocus ? themeManager.accent : themeManager.borderPrimary
+                        height: 70
+                        radius: 8
+                        color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
+                        border.color: commitInput.activeFocus ? themeManager.accent : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary)
                         border.width: 1
 
                         TextArea {

@@ -79,9 +79,9 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 height: 38
-                radius: 6
-                color: themeManager.bgInput
-                border.color: root.errorText ? themeManager.danger : (inputField.activeFocus ? themeManager.accent : themeManager.borderPrimary)
+                radius: 7
+                color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
+                border.color: root.errorText ? themeManager.danger : (inputField.activeFocus ? themeManager.accent : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary))
                 border.width: 1
 
                 TextField {

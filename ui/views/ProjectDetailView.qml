@@ -124,6 +124,58 @@ Item {
                     spacing: 20
 
                     // Overview Card
+                    // Upload / Publish to GitHub Card (visible if unlinked)
+                    Rectangle {
+                        visible: !root.projectDetails || !root.projectDetails.project || !root.projectDetails.project.git_remote
+                        Layout.fillWidth: true
+                        implicitHeight: pubColOverview.implicitHeight + 36
+                        radius: 8
+                        color: themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.08) : Qt.rgba(2, 132, 199, 0.06)
+                        border.color: themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.35) : themeManager.borderPrimary
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: pubColOverview
+                            anchors.fill: parent
+                            anchors.margins: 20
+                            spacing: 12
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+
+                                AppIcon { name: "push"; size: 18; color: themeManager.accent }
+
+                                Column {
+                                    Layout.fillWidth: true
+                                    spacing: 2
+                                    Text {
+                                        text: "Upload Full Project to GitHub"
+                                        color: themeManager.textPrimary
+                                        font.pixelSize: 14
+                                        font.weight: Font.Bold
+                                    }
+                                    Text {
+                                        text: "Upload all project files with proper structure (.gitignore), initialize Git, and link to a new or existing repository."
+                                        color: themeManager.textSecondary
+                                        font.pixelSize: 11
+                                    }
+                                }
+
+                                ActionButton {
+                                    text: "Upload to GitHub"
+                                    iconName: "push"
+                                    btnStyle: "primary"
+                                    onClicked: {
+                                        if (root.projectDetails && root.projectDetails.project) {
+                                            appWindow.openUploadProjectDialog(root.projectDetails.project);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: overCol.implicitHeight + 36
@@ -232,8 +284,10 @@ Item {
                                     iconName: "refresh"
                                     btnStyle: "secondary"
                                     onClicked: {
-                                        backendBridge.sendRequest("git.fetch", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s) {
+                                        toast.show("Fetching from remote...", "info");
+                                        backendBridge.sendRequest("git.fetch", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s, d, err) {
                                             if (s) { toast.show("Fetch completed.", "success"); root.loadProject(); }
+                                            else toast.show("Fetch failed: " + err, "error");
                                         });
                                     }
                                 }
@@ -243,8 +297,10 @@ Item {
                                     iconName: "pull"
                                     btnStyle: "secondary"
                                     onClicked: {
-                                        backendBridge.sendRequest("git.pull", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s) {
-                                            if (s) { toast.show("Pull completed.", "success"); root.loadProject(); }
+                                        toast.show("Pulling changes...", "info");
+                                        backendBridge.sendRequest("git.pull", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s, d, err) {
+                                            if (s) { toast.show("Pull completed successfully!", "success"); root.loadProject(); }
+                                            else toast.show("Pull failed: " + err, "error");
                                         });
                                     }
                                 }
@@ -254,9 +310,34 @@ Item {
                                     iconName: "push"
                                     btnStyle: "primary"
                                     onClicked: {
-                                        backendBridge.sendRequest("git.push", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s) {
-                                            if (s) { toast.show("Push completed.", "success"); root.loadProject(); }
-                                        });
+                                        var p = root.projectDetails.project;
+                                        var rInfo = root.projectDetails.repo_info || {};
+                                        var remote = p.git_remote || rInfo.primary_remote_url;
+                                        if (!remote || remote === "") {
+                                            appWindow.openUploadProjectDialog(p);
+                                        } else {
+                                            toast.show("Pushing changes...", "info");
+                                            backendBridge.sendRequest("git.push", {"path": p.local_path, "project_id": root.projectId}, function(s, d, err) {
+                                                if (s) {
+                                                    toast.show("Push completed successfully!", "success");
+                                                    root.loadProject();
+                                                } else {
+                                                    toast.show("Push failed: " + err, "error");
+                                                    appWindow.openUploadProjectDialog(p);
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+
+                                ActionButton {
+                                    text: (!root.projectDetails || !root.projectDetails.project || !root.projectDetails.project.git_remote) ? "Upload to GitHub" : "Upload / Link Repo"
+                                    iconName: "push"
+                                    btnStyle: (!root.projectDetails || !root.projectDetails.project || !root.projectDetails.project.git_remote) ? "primary" : "subtle"
+                                    onClicked: {
+                                        if (root.projectDetails && root.projectDetails.project) {
+                                            appWindow.openUploadProjectDialog(root.projectDetails.project);
+                                        }
                                     }
                                 }
                             }
@@ -403,22 +484,28 @@ Item {
                                         Repeater {
                                             model: (root.projectDetails && root.projectDetails.report) ? root.projectDetails.report.activity_chart : []
 
-                                            Column {
+                                            ColumnLayout {
                                                 Layout.fillWidth: true
                                                 Layout.fillHeight: true
                                                 spacing: 4
 
-                                                Rectangle {
-                                                    width: parent.width
-                                                    height: Math.max(4, Math.min(60, modelData.count * 12))
-                                                    radius: 2
-                                                    color: modelData.count > 0 ? themeManager.accent : themeManager.borderPrimary
-                                                    anchors.bottom: parent.bottom
+                                                Item {
+                                                    Layout.fillWidth: true
+                                                    Layout.fillHeight: true
+
+                                                    Rectangle {
+                                                        anchors.bottom: parent.bottom
+                                                        anchors.horizontalCenter: parent.horizontalCenter
+                                                        width: Math.max(4, Math.min(parent.width - 4, 18))
+                                                        height: Math.max(4, Math.min(60, modelData.count * 12))
+                                                        radius: 2
+                                                        color: modelData.count > 0 ? themeManager.accent : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.08) : Qt.rgba(0, 0, 0, 0.08))
+                                                    }
                                                 }
 
                                                 Text {
-                                                    anchors.horizontalCenter: parent.horizontalCenter
-                                                    text: modelData.date.substring(5)
+                                                    Layout.alignment: Qt.AlignHCenter
+                                                    text: (modelData && modelData.date) ? modelData.date.substring(5) : ""
                                                     color: themeManager.textMuted
                                                     font.pixelSize: 9
                                                 }
@@ -587,6 +674,57 @@ Item {
                     anchors.margins: 24
                     spacing: 20
 
+                    // Upload / Publish to GitHub Card
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: pubColRemote.implicitHeight + 36
+                        radius: 8
+                        color: themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.08) : Qt.rgba(2, 132, 199, 0.06)
+                        border.color: themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.35) : themeManager.borderPrimary
+                        border.width: 1
+
+                        ColumnLayout {
+                            id: pubColRemote
+                            anchors.fill: parent
+                            anchors.margins: 20
+                            spacing: 12
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+
+                                AppIcon { name: "push"; size: 18; color: themeManager.accent }
+
+                                Column {
+                                    Layout.fillWidth: true
+                                    spacing: 2
+                                    Text {
+                                        text: "Upload Full Project to GitHub"
+                                        color: themeManager.textPrimary
+                                        font.pixelSize: 14
+                                        font.weight: Font.Bold
+                                    }
+                                    Text {
+                                        text: "Upload all project files with proper structure (.gitignore), initialize Git, and link to a new or existing repository."
+                                        color: themeManager.textSecondary
+                                        font.pixelSize: 11
+                                    }
+                                }
+
+                                ActionButton {
+                                    text: "Upload to GitHub"
+                                    iconName: "push"
+                                    btnStyle: "primary"
+                                    onClicked: {
+                                        if (root.projectDetails && root.projectDetails.project) {
+                                            appWindow.openUploadProjectDialog(root.projectDetails.project);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: remCol.implicitHeight + 36
@@ -615,9 +753,9 @@ Item {
                                 Rectangle {
                                     Layout.fillWidth: true
                                     height: 38
-                                    radius: 6
-                                    color: themeManager.bgInput
-                                    border.color: themeManager.borderPrimary
+                                    radius: 7
+                                    color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
+                                    border.color: remoteUrlInput.activeFocus ? themeManager.accent : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary)
                                     border.width: 1
 
                                     TextField {

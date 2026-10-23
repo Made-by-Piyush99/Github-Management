@@ -58,9 +58,10 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: 10
 
-                Text {
-                    text: root.btnStyle === "danger" ? "⚠️" : "ℹ️"
-                    font.pixelSize: 20
+                AppIcon {
+                    name: root.btnStyle === "danger" ? "shield" : "guide"
+                    size: 18
+                    color: root.btnStyle === "danger" ? themeManager.danger : themeManager.accent
                 }
 
                 Text {

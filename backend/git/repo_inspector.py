@@ -4,6 +4,7 @@ Reads the authoritative state of a local repository.
 """
 
 import os
+import re
 from typing import Dict, Any, List, Optional
 from .cli import GitCLI
 
@@ -158,7 +159,8 @@ class RepoInspector:
                 parts = rline.split()
                 if len(parts) >= 3:
                     rname = parts[0]
-                    rurl = parts[1]
+                    raw_url = parts[1]
+                    rurl = re.sub(r'https?://[^@]+@', 'https://', raw_url)
                     rtype = parts[2].strip("()")
                     if rname not in remotes_dict:
                         remotes_dict[rname] = {"name": rname, "fetch": "", "push": ""}

@@ -147,9 +147,9 @@ Rectangle {
                     Rectangle {
                         Layout.fillWidth: true
                         height: 36
-                        radius: 6
-                        color: themeManager.bgInput
-                        border.color: nameField.activeFocus ? themeManager.accent : themeManager.borderPrimary
+                        radius: 7
+                        color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
+                        border.color: nameField.activeFocus ? themeManager.accent : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary)
                         border.width: 1
 
                         TextField {
@@ -180,9 +180,9 @@ Rectangle {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 36
-                    radius: 6
-                    color: themeManager.bgInput
-                    border.color: descField.activeFocus ? themeManager.accent : themeManager.borderPrimary
+                    radius: 7
+                    color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
+                    border.color: descField.activeFocus ? themeManager.accent : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary)
                     border.width: 1
 
                     TextField {
@@ -314,22 +314,22 @@ Rectangle {
                     Layout.fillWidth: true
                     spacing: 12
 
-                    Column {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 2
-                        Text { text: "Add .gitignore template:"; color: themeManager.textPrimary; font.pixelSize: 11 }
-                        ComboBox {
+                        spacing: 4
+                        Text { text: "Add .gitignore template:"; color: themeManager.textPrimary; font.pixelSize: 11; font.weight: Font.DemiBold }
+                        StyledComboBox {
                             id: gitignoreCombo
                             Layout.fillWidth: true
                             model: ["None", "Python", "Node", "C++", "Java", "Go", "Unity", "Rust"]
                         }
                     }
 
-                    Column {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 2
-                        Text { text: "Choose a license:"; color: themeManager.textPrimary; font.pixelSize: 11 }
-                        ComboBox {
+                        spacing: 4
+                        Text { text: "Choose a license:"; color: themeManager.textPrimary; font.pixelSize: 11; font.weight: Font.DemiBold }
+                        StyledComboBox {
                             id: licenseCombo
                             Layout.fillWidth: true
                             model: [

@@ -8,14 +8,8 @@ Rectangle {
     property bool small: false
 
     function getBadgeBg(st) {
-        var s = (st || "").toLowerCase();
-        if (s.indexOf("sync") !== -1) return themeManager.isDark ? "#143D24" : "#DCFCE7";
-        if (s.indexOf("modified") !== -1) return themeManager.isDark ? "#3D2B14" : "#FEF3C7";
-        if (s.indexOf("ahead") !== -1) return themeManager.isDark ? "#1E293B" : "#E0F2FE";
-        if (s.indexOf("behind") !== -1) return themeManager.isDark ? "#3D1E14" : "#FFEDD5";
-        if (s.indexOf("conflict") !== -1 || s.indexOf("error") !== -1) return themeManager.isDark ? "#3D1414" : "#FEE2E2";
-        if (s.indexOf("empty") !== -1 || s.indexOf("no remote") !== -1) return themeManager.isDark ? "#262C38" : "#F3F4F6";
-        return themeManager.isDark ? "#262C38" : "#F3F4F6";
+        var fg = getBadgeFg(st);
+        return themeManager.isDark ? Qt.rgba(fg.r, fg.g, fg.b, 0.14) : Qt.rgba(fg.r, fg.g, fg.b, 0.1);
     }
 
     function getBadgeFg(st) {
@@ -28,8 +22,8 @@ Rectangle {
         return themeManager.textSecondary;
     }
 
-    implicitWidth: label.implicitWidth + (small ? 12 : 16)
-    implicitHeight: small ? 20 : 26
+    implicitWidth: label.implicitWidth + (small ? 14 : 18)
+    implicitHeight: small ? 22 : 26
     radius: height / 2
     color: getBadgeBg(status)
     border.color: Qt.rgba(getBadgeFg(status).r, getBadgeFg(status).g, getBadgeFg(status).b, 0.3)

@@ -15,6 +15,11 @@ Rectangle {
     signal githubPillClicked()
     signal createRepoClicked()
 
+    function focusSearch() {
+        searchInput.forceActiveFocus();
+        searchInput.selectAll();
+    }
+
     height: 56
     color: themeManager.bgSecondary
     border.color: themeManager.borderPrimary
@@ -36,26 +41,52 @@ Rectangle {
 
         Item { Layout.preferredWidth: 20 }
 
-        // Global Search Bar
+        // Global Search Bar - Translucent Glassmorphism
         Rectangle {
-            Layout.preferredWidth: 320
-            Layout.maximumWidth: 400
-            height: 34
-            radius: 6
-            color: themeManager.bgInput
-            border.color: searchInput.activeFocus ? themeManager.accent : themeManager.borderPrimary
+            id: searchContainer
+            Layout.preferredWidth: 340
+            Layout.maximumWidth: 420
+            height: 36
+            radius: 8
+
+            color: {
+                if (searchInput.activeFocus) {
+                    return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.08) : Qt.rgba(0, 0, 0, 0.05);
+                }
+                if (searchMouse.containsMouse) {
+                    return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.05) : Qt.rgba(0, 0, 0, 0.035);
+                }
+                return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.03) : Qt.rgba(0, 0, 0, 0.02);
+            }
+
+            border.color: {
+                if (searchInput.activeFocus) return themeManager.accent;
+                if (searchMouse.containsMouse) return themeManager.borderSecondary;
+                return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary;
+            }
             border.width: 1
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+            Behavior on border.color { ColorAnimation { duration: 120 } }
+
+            MouseArea {
+                id: searchMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.IBeamCursor
+                onClicked: searchInput.forceActiveFocus()
+            }
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 10
+                anchors.leftMargin: 12
                 anchors.rightMargin: 10
                 spacing: 8
 
                 AppIcon {
                     name: "search"
                     size: 14
-                    color: themeManager.textMuted
+                    color: searchInput.activeFocus ? themeManager.accent : themeManager.textMuted
                 }
 
                 TextInput {
@@ -73,9 +104,31 @@ Rectangle {
                         text: "Search projects, branches, remotes..."
                         color: themeManager.textMuted
                         font.pixelSize: 13
+                        verticalAlignment: Text.AlignVCenter
                     }
                 }
 
+                // Keyboard shortcut hint pill (Ctrl+K)
+                Rectangle {
+                    visible: searchInput.text === ""
+                    height: 20
+                    width: kbdLabel.implicitWidth + 10
+                    radius: 4
+                    color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.06) : Qt.rgba(0, 0, 0, 0.05)
+                    border.color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.08) : Qt.rgba(0, 0, 0, 0.08)
+                    border.width: 1
+
+                    Text {
+                        id: kbdLabel
+                        anchors.centerIn: parent
+                        text: "Ctrl K"
+                        color: themeManager.textMuted
+                        font.pixelSize: 10
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                // Clear button
                 Text {
                     visible: searchInput.text !== ""
                     text: "✕"

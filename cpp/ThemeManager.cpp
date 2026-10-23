@@ -20,42 +20,42 @@ void ThemeManager::toggleTheme()
 
 QColor ThemeManager::bgPrimary() const
 {
-    return m_isDark ? QColor("#0B0E14") : QColor("#F8FAFC");
+    return m_isDark ? QColor("#080B11") : QColor("#F8FAFC");
 }
 
 QColor ThemeManager::bgSecondary() const
 {
-    return m_isDark ? QColor("#111620") : QColor("#FFFFFF");
+    return m_isDark ? QColor("#0E131F") : QColor("#FFFFFF");
 }
 
 QColor ThemeManager::bgCard() const
 {
-    return m_isDark ? QColor("#161D2A") : QColor("#FFFFFF");
+    return m_isDark ? QColor("#131B2B") : QColor("#FFFFFF");
 }
 
 QColor ThemeManager::bgCardHover() const
 {
-    return m_isDark ? QColor("#1E2738") : QColor("#F1F5F9");
+    return m_isDark ? QColor("#1A2438") : QColor("#F1F5F9");
 }
 
 QColor ThemeManager::bgInput() const
 {
-    return m_isDark ? QColor("#0E131C") : QColor("#FFFFFF");
+    return m_isDark ? QColor("#0B101A") : QColor("#FFFFFF");
 }
 
 QColor ThemeManager::borderPrimary() const
 {
-    return m_isDark ? QColor("#222C3D") : QColor("#E2E8F0");
+    return m_isDark ? QColor("#1E293B") : QColor("#E2E8F0");
 }
 
 QColor ThemeManager::borderSecondary() const
 {
-    return m_isDark ? QColor("#313F56") : QColor("#CBD5E1");
+    return m_isDark ? QColor("#334155") : QColor("#CBD5E1");
 }
 
 QColor ThemeManager::textPrimary() const
 {
-    return m_isDark ? QColor("#F1F5F9") : QColor("#0F172A");
+    return m_isDark ? QColor("#F8FAFC") : QColor("#0F172A");
 }
 
 QColor ThemeManager::textSecondary() const

@@ -11,8 +11,8 @@ Rectangle {
 
     signal tabSelected(int index)
 
-    width: 230
-    color: themeManager.bgSecondary
+    width: 236
+    color: themeManager.isDark ? Qt.rgba(14/255, 19/255, 31/255, 0.98) : themeManager.bgSecondary
     border.color: themeManager.borderPrimary
     border.width: 1
 
@@ -147,8 +147,8 @@ Rectangle {
                                 property bool isHovered: mouseArea.containsMouse
 
                                 color: isActive
-                                       ? themeManager.accentMuted
-                                       : (isHovered ? themeManager.bgCardHover : "transparent")
+                                       ? (themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.14) : themeManager.accentMuted)
+                                       : (isHovered ? (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.05) : themeManager.bgCardHover) : "transparent")
 
                                 Behavior on color { ColorAnimation { duration: 100 } }
 

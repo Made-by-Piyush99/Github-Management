@@ -11,9 +11,11 @@
         <file>ui/components/Sidebar.qml</file>
         <file>ui/components/StatCard.qml</file>
         <file>ui/components/StatusBadge.qml</file>
+        <file>ui/components/StyledComboBox.qml</file>
         <file>ui/components/TextInputDialog.qml</file>
         <file>ui/components/Toast.qml</file>
         <file>ui/components/TopBar.qml</file>
+        <file>ui/components/UploadProjectDialog.qml</file>
         <file>ui/views/ActivityView.qml</file>
         <file>ui/views/BranchesView.qml</file>
         <file>ui/views/ChangesView.qml</file>

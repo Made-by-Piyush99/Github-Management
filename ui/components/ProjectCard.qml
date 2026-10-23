@@ -11,13 +11,25 @@ Rectangle {
 
     implicitWidth: 600
     implicitHeight: 140
-    radius: 8
-    color: mouseArea.containsMouse ? themeManager.bgCardHover : themeManager.bgCard
-    border.color: mouseArea.containsMouse ? themeManager.borderSecondary : themeManager.borderPrimary
+    radius: 10
+    color: mouseArea.containsMouse ? themeManager.bgCardHover : (themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.75) : themeManager.bgCard)
+    border.color: mouseArea.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.5) : themeManager.borderPrimary
     border.width: 1
 
     Behavior on color { ColorAnimation { duration: 120 } }
     Behavior on border.color { ColorAnimation { duration: 120 } }
+
+    // Top edge subtle glow
+    Rectangle {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 1
+        height: 1
+        radius: 10
+        color: mouseArea.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.35) : Qt.rgba(255, 255, 255, 0.06)
+        visible: themeManager.isDark
+    }
 
     MouseArea {
         id: mouseArea
@@ -246,9 +258,9 @@ Rectangle {
             }
 
             ActionButton {
-                text: "Push"
+                text: (!projectData.git_remote || projectData.git_remote === "") ? "Upload" : "Push"
                 iconName: "push"
-                btnStyle: "subtle"
+                btnStyle: (!projectData.git_remote || projectData.git_remote === "") ? "primary" : "subtle"
                 small: true
                 onClicked: root.quickAction("push", projectData)
             }

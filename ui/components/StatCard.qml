@@ -14,13 +14,32 @@ Rectangle {
 
     implicitWidth: 200
     implicitHeight: 96
-    radius: 8
-    color: themeManager.bgCard
-    border.color: isWarning ? Qt.rgba(themeManager.warning.r, themeManager.warning.g, themeManager.warning.b, 0.4) : themeManager.borderPrimary
+    radius: 10
+    color: mouseArea.containsMouse ? themeManager.bgCardHover : (themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.7) : themeManager.bgCard)
+    border.color: isWarning
+                  ? Qt.rgba(themeManager.warning.r, themeManager.warning.g, themeManager.warning.b, 0.45)
+                  : (mouseArea.containsMouse ? Qt.rgba(root.highlightColor.r, root.highlightColor.g, root.highlightColor.b, 0.5) : themeManager.borderPrimary)
     border.width: 1
 
-    Behavior on color {
-        ColorAnimation { duration: 150 }
+    Behavior on color { ColorAnimation { duration: 120 } }
+    Behavior on border.color { ColorAnimation { duration: 120 } }
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+    }
+
+    // Top subtle highlight
+    Rectangle {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 1
+        height: 1
+        radius: 10
+        color: mouseArea.containsMouse ? Qt.rgba(root.highlightColor.r, root.highlightColor.g, root.highlightColor.b, 0.3) : Qt.rgba(255, 255, 255, 0.05)
+        visible: themeManager.isDark
     }
 
     Item {

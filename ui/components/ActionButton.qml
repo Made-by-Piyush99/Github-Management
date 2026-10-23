@@ -29,13 +29,13 @@ Item {
         if (mouseArea.containsMouse) {
             if (btnStyle === "primary") return themeManager.accentHover;
             if (btnStyle === "danger") return Qt.lighter(themeManager.danger, 1.1);
-            if (btnStyle === "subtle") return themeManager.bgCardHover;
-            return themeManager.bgCardHover;
+            if (btnStyle === "subtle") return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.07) : themeManager.bgCardHover;
+            return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.09) : themeManager.bgCardHover;
         }
         if (btnStyle === "primary") return themeManager.accent;
         if (btnStyle === "danger") return themeManager.danger;
         if (btnStyle === "subtle") return "transparent";
-        return themeManager.bgCard;
+        return themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgCard;
     }
 
     function getFgColor() {
@@ -47,9 +47,11 @@ Item {
     Rectangle {
         id: bgRect
         anchors.fill: parent
-        radius: 6
+        radius: 7
         color: root.getBgColor()
-        border.color: (root.btnStyle === "primary" || root.btnStyle === "subtle") ? "transparent" : themeManager.borderPrimary
+        border.color: (root.btnStyle === "primary" || root.btnStyle === "subtle")
+                      ? "transparent"
+                      : (mouseArea.containsMouse ? themeManager.borderSecondary : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.1) : themeManager.borderPrimary))
         border.width: 1
 
         Behavior on color {

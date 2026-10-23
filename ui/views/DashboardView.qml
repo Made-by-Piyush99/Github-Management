@@ -295,14 +295,25 @@ ScrollView {
                 model: root.githubRepos
 
                 Rectangle {
+                    id: ghCard
                     Layout.fillWidth: true
-                    height: 56
-                    radius: 8
-                    color: themeManager.bgCard
-                    border.color: themeManager.borderPrimary
+                    height: 58
+                    radius: 10
+                    color: ghCardMouse.containsMouse ? themeManager.bgCardHover : (themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.7) : themeManager.bgCard)
+                    border.color: ghCardMouse.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.4) : themeManager.borderPrimary
                     border.width: 1
 
+                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on border.color { ColorAnimation { duration: 120 } }
+
                     property var itemData: modelData
+
+                    MouseArea {
+                        id: ghCardMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.NoButton
+                    }
 
                     RowLayout {
                         anchors.fill: parent

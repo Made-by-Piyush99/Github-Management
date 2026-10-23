@@ -139,10 +139,25 @@ ScrollView {
                 id: projRow
                 width: ListView.view.width
                 implicitHeight: col.implicitHeight + 28
-                radius: 8
-                color: mouseA.containsMouse ? themeManager.bgCardHover : themeManager.bgCard
-                border.color: themeManager.borderPrimary
+                radius: 10
+                color: mouseA.containsMouse ? themeManager.bgCardHover : (themeManager.isDark ? Qt.rgba(19/255, 27/255, 43/255, 0.7) : themeManager.bgCard)
+                border.color: mouseA.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.4) : themeManager.borderPrimary
                 border.width: 1
+
+                Behavior on color { ColorAnimation { duration: 120 } }
+                Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                // Top edge subtle glow
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 1
+                    height: 1
+                    radius: 10
+                    color: mouseA.containsMouse ? Qt.rgba(56/255, 189/255, 248/255, 0.3) : Qt.rgba(255, 255, 255, 0.05)
+                    visible: themeManager.isDark
+                }
 
                 property var pData: projectModel.get(index)
 
@@ -216,6 +231,48 @@ ScrollView {
                                     "primary",
                                     "Initialize"
                                 );
+                            }
+                        }
+
+                        ActionButton {
+                            text: (!pData.git_remote || pData.git_remote === "") ? "Upload to GitHub" : "Push"
+                            iconName: "push"
+                            btnStyle: (!pData.git_remote || pData.git_remote === "") ? "primary" : "secondary"
+                            small: true
+                            onClicked: {
+                                if (!pData.git_remote || pData.git_remote === "") {
+                                    appWindow.openUploadProjectDialog(pData);
+                                } else {
+                                    toast.show("Pushing changes to GitHub...", "info");
+                                    backendBridge.sendRequest("git.push", {"path": pData.local_path, "project_id": pData.id}, function(s, d, err) {
+                                        if (s) {
+                                            toast.show("Push completed successfully!", "success");
+                                            root.refreshRequested();
+                                        } else {
+                                            toast.show("Push failed: " + err, "error");
+                                            appWindow.openUploadProjectDialog(pData);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+
+                        ActionButton {
+                            visible: !!pData.git_remote
+                            text: "Pull"
+                            iconName: "pull"
+                            btnStyle: "subtle"
+                            small: true
+                            onClicked: {
+                                toast.show("Pulling changes...", "info");
+                                backendBridge.sendRequest("git.pull", {"path": pData.local_path, "project_id": pData.id}, function(s, d, err) {
+                                    if (s) {
+                                        toast.show("Pull completed successfully!", "success");
+                                        root.refreshRequested();
+                                    } else {
+                                        toast.show("Pull failed: " + err, "error");
+                                    }
+                                });
                             }
                         }
 

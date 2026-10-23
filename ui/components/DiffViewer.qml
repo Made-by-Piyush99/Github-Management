@@ -8,10 +8,10 @@ Rectangle {
     property var diffData: null // Parsed diff object with files array
     property string rawDiff: ""
 
-    color: themeManager.bgPrimary
+    color: themeManager.isDark ? Qt.rgba(11/255, 16/255, 26/255, 0.75) : themeManager.bgPrimary
     border.color: themeManager.borderPrimary
     border.width: 1
-    radius: 6
+    radius: 10
     clip: true
 
     ScrollView {
@@ -55,9 +55,10 @@ Rectangle {
                             anchors.rightMargin: 12
                             spacing: 8
 
-                            Text {
-                                text: modelData.status === "added" ? "➕" : (modelData.status === "deleted" ? "➖" : "📝")
-                                font.pixelSize: 13
+                            AppIcon {
+                                name: "diff"
+                                size: 14
+                                color: modelData.status === "added" ? themeManager.success : (modelData.status === "deleted" ? themeManager.danger : themeManager.warning)
                             }
 
                             Text {
@@ -121,8 +122,8 @@ Rectangle {
                                     width: parent.width
                                     height: 22
                                     color: {
-                                        if (modelData.type === "add") return themeManager.isDark ? "#143D24" : "#E6F4EA";
-                                        if (modelData.type === "del") return themeManager.isDark ? "#3D1414" : "#FCE8E6";
+                                        if (modelData.type === "add") return themeManager.isDark ? Qt.rgba(16/255, 185/255, 129/255, 0.15) : "#E6F4EA";
+                                        if (modelData.type === "del") return themeManager.isDark ? Qt.rgba(244/255, 63/255, 94/255, 0.15) : "#FCE8E6";
                                         return "transparent";
                                     }
 
