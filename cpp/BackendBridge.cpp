@@ -2,6 +2,8 @@
 #include <QDebug>
 #include <QStandardPaths>
 #include <QJSEngine>
+#include <QElapsedTimer>
+#include <QCoreApplication>
 
 BackendBridge::BackendBridge(QObject *parent)
     : QObject(parent)
@@ -90,6 +92,25 @@ void BackendBridge::restart()
     start();
 }
 
+bool BackendBridge::waitForReady(int timeoutMs)
+{
+    if (m_connected) {
+        return true;
+    }
+
+    QElapsedTimer timer;
+    timer.start();
+
+    while (!m_connected && timer.elapsed() < timeoutMs) {
+        if (m_process.state() == QProcess::NotRunning && !m_starting) {
+            return false;
+        }
+        m_process.waitForReadyRead(50);
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+    }
+    return m_connected;
+}
+
 void BackendBridge::sendRequest(const QString &cmd, const QVariantMap &args, const QJSValue &callback)
 {
     QString reqId = QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -106,19 +127,11 @@ void BackendBridge::sendRequest(const QString &cmd, const QVariantMap &args, con
     QJsonDocument doc(reqObj);
     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
 
-    if (m_process.state() == QProcess::Running) {
+    if (m_process.state() == QProcess::Running && m_connected) {
         m_process.write(data);
     } else {
-        qWarning() << "[BackendBridge] Cannot send request, process not running:" << cmd;
-        if (callback.isCallable()) {
-            QJSEngine *engine = qjsEngine(this);
-            if (engine) {
-                QJSValueList cbArgs;
-                cbArgs << false << QJSValue(QJSValue::NullValue) << QString("Backend process is not running.");
-                QJSValue mutableCb = callback;
-                mutableCb.call(cbArgs);
-            }
-        }
+        qDebug() << "[BackendBridge] Queuing request until backend is ready:" << cmd;
+        m_outgoingQueue.append(data);
     }
 }
 
@@ -166,6 +179,11 @@ void BackendBridge::processLine(const QString &line)
             emit connectedChanged(true);
             emit startingChanged(false);
             emit readyReceived();
+
+            // Flush all requests that were queued before backend was ready
+            while (!m_outgoingQueue.isEmpty()) {
+                m_process.write(m_outgoingQueue.takeFirst());
+            }
         } else if (eventName == "task_progress") {
             emit taskProgress(data["task_id"].toString(), data["percent"].toInt(), data["message"].toString());
         }

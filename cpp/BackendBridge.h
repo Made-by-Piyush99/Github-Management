@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE void start();
     Q_INVOKABLE void stop();
     Q_INVOKABLE void restart();
+    bool waitForReady(int timeoutMs = 6000);
 
     // Sends a command to the backend worker with an optional JS callback function(success, data, error)
     Q_INVOKABLE void sendRequest(const QString &cmd, const QVariantMap &args = QVariantMap(), const QJSValue &callback = QJSValue());
@@ -68,6 +69,7 @@ private:
     bool m_starting{false};
     QString m_lastError;
     QByteArray m_outputBuffer;
+    QList<QByteArray> m_outgoingQueue;
 
     struct PendingRequest {
         QString cmd;

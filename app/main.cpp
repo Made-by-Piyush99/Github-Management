@@ -58,10 +58,16 @@ int main(int argc, char *argv[])
     engine.addImportPath(app.applicationDirPath());
     engine.addImportPath("qrc:/");
 
-    // Start background Python worker
+    // 1. Start background Python worker FIRST
     backendBridge->start();
+    qInfo() << "[Main] Starting Python backend engine first...";
+    if (backendBridge->waitForReady(6000)) {
+        qInfo() << "[Main] Python backend engine confirmed READY. Launching Desktop UI...";
+    } else {
+        qWarning() << "[Main] Warning: Backend startup timeout, continuing with UI launch...";
+    }
 
-    // Load Main.qml (supports both resource and direct filesystem for fast iteration)
+    // 2. Load Main.qml once backend is initialized
     const QUrl url(QStringLiteral("qrc:/ui/Main.qml"));
     QObject::connect(
         &engine,

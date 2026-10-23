@@ -86,8 +86,10 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        appWindow.refreshAll();
-        appWindow.checkTourOnStartup();
+        if (backendBridge.isConnected) {
+            appWindow.refreshAll();
+            appWindow.checkTourOnStartup();
+        }
     }
 
     // Keyboard Shortcuts
