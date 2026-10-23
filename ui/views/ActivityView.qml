@@ -63,7 +63,7 @@ ScrollView {
 
             ActionButton {
                 text: "Export CSV"
-                iconText: "📊"
+                iconName: "activity"
                 btnStyle: "secondary"
                 small: true
                 onClicked: {
@@ -79,7 +79,7 @@ ScrollView {
 
             ActionButton {
                 text: "Export JSON"
-                iconText: "📄"
+                iconName: "diff"
                 btnStyle: "secondary"
                 small: true
                 onClicked: {
@@ -95,7 +95,7 @@ ScrollView {
 
             ActionButton {
                 text: "Refresh"
-                iconText: "🔄"
+                iconName: "refresh"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.loadActivity()
@@ -143,10 +143,11 @@ ScrollView {
                 anchors.centerIn: parent
                 spacing: 8
 
-                Text {
+                AppIcon {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "📜"
-                    font.pixelSize: 28
+                    name: "activity"
+                    size: 28
+                    color: themeManager.textMuted
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -184,9 +185,10 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 10
 
-                        Text {
-                            text: model.status === "success" ? "✅" : "❌"
-                            font.pixelSize: 13
+                        AppIcon {
+                            name: model.status === "success" ? "check" : "trash"
+                            size: 14
+                            color: model.status === "success" ? themeManager.success : themeManager.danger
                         }
 
                         Text {

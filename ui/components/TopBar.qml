@@ -52,9 +52,9 @@ Rectangle {
                 anchors.rightMargin: 10
                 spacing: 8
 
-                Text {
-                    text: "🔍"
-                    font.pixelSize: 12
+                AppIcon {
+                    name: "search"
+                    size: 14
                     color: themeManager.textMuted
                 }
 
@@ -99,7 +99,7 @@ Rectangle {
         // Create New Repository Button (Visible across all tabs!)
         ActionButton {
             text: "New Repo"
-            iconText: "➕"
+            iconName: "plus"
             btnStyle: "primary"
             onClicked: root.createRepoClicked()
         }
@@ -107,7 +107,7 @@ Rectangle {
         // Refresh All Button
         ActionButton {
             text: "Refresh"
-            iconText: "🔄"
+            iconName: "refresh"
             btnStyle: "subtle"
             busy: root.isRefreshing
             onClicked: root.refreshClicked()
@@ -125,11 +125,12 @@ Rectangle {
             Row {
                 id: ghRow
                 anchors.centerIn: parent
-                spacing: 6
+                spacing: 8
 
-                Text {
-                    text: "🐙"
-                    font.pixelSize: 14
+                AppIcon {
+                    name: "github"
+                    size: 15
+                    color: root.githubUser ? themeManager.accent : themeManager.textSecondary
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
@@ -168,10 +169,11 @@ Rectangle {
             border.color: themeManager.borderPrimary
             border.width: 1
 
-            Text {
+            AppIcon {
                 anchors.centerIn: parent
-                text: themeManager.isDark ? "☀️" : "🌙"
-                font.pixelSize: 14
+                name: themeManager.isDark ? "sun" : "moon"
+                size: 15
+                color: themeManager.textSecondary
             }
 
             MouseArea {

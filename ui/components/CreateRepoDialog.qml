@@ -61,9 +61,20 @@ Rectangle {
             // Dialog Header
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 12
 
-                Text { text: "📦"; font.pixelSize: 22 }
+                Rectangle {
+                    width: 36
+                    height: 36
+                    radius: 8
+                    color: Qt.rgba(56/255, 189/255, 248/255, 0.15)
+                    AppIcon {
+                        anchors.centerIn: parent
+                        name: "repo"
+                        size: 18
+                        color: themeManager.accent
+                    }
+                }
 
                 Column {
                     spacing: 2
@@ -221,7 +232,11 @@ Rectangle {
                             }
 
                             Column {
-                                Text { text: "Public 🌐"; color: themeManager.textPrimary; font.pixelSize: 12; font.weight: Font.Bold }
+                                Row {
+                                    spacing: 4
+                                    Text { text: "Public"; color: themeManager.textPrimary; font.pixelSize: 12; font.weight: Font.Bold; anchors.verticalCenter: parent.verticalCenter }
+                                    AppIcon { name: "repo"; size: 12; color: themeManager.textSecondary; anchors.verticalCenter: parent.verticalCenter }
+                                }
                                 Text { text: "Anyone on the internet can see this repository."; color: themeManager.textMuted; font.pixelSize: 10 }
                             }
                         }
@@ -251,7 +266,11 @@ Rectangle {
                             }
 
                             Column {
-                                Text { text: "Private 🔒"; color: themeManager.textPrimary; font.pixelSize: 12; font.weight: Font.Bold }
+                                Row {
+                                    spacing: 4
+                                    Text { text: "Private"; color: themeManager.textPrimary; font.pixelSize: 12; font.weight: Font.Bold; anchors.verticalCenter: parent.verticalCenter }
+                                    AppIcon { name: "shield"; size: 12; color: themeManager.accent; anchors.verticalCenter: parent.verticalCenter }
+                                }
                                 Text { text: "You choose who can see and commit."; color: themeManager.textMuted; font.pixelSize: 10 }
                             }
                         }
@@ -357,7 +376,7 @@ Rectangle {
 
                 ActionButton {
                     text: "Create Repository"
-                    iconText: "🚀"
+                    iconName: "plus"
                     btnStyle: "primary"
                     busy: root.busy
                     onClicked: {

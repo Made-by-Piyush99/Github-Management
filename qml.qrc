@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>ui/Main.qml</file>
         <file>ui/components/ActionButton.qml</file>
+        <file>ui/components/AppIcon.qml</file>
         <file>ui/components/AppTourDialog.qml</file>
         <file>ui/components/ConfirmDialog.qml</file>
         <file>ui/components/CreateRepoDialog.qml</file>

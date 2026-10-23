@@ -33,49 +33,49 @@ Rectangle {
 
     readonly property var slides: [
         {
-            "icon": "⚡",
+            "iconName": "repo",
             "title": "Welcome to DevSync Studio",
             "subtitle": "Your Central Git & GitHub Desktop Command Center",
             "desc": "DevSync Studio gives you complete control over all your local repositories and GitHub projects from a single native desktop interface with real-time Git operations and analytics.",
-            "bullet1": "🚀 1-Click clone from GitHub directly into your workspace",
-            "bullet2": "📁 Full working-tree tracking, staging, diffs, and commits",
-            "bullet3": "📊 Deep repository health reports & 14-day commit trends"
+            "bullet1": "• 1-Click clone from GitHub directly into your workspace",
+            "bullet2": "• Full working-tree tracking, staging, diffs, and commits",
+            "bullet3": "• Deep repository health reports & 14-day commit trends"
         },
         {
-            "icon": "🔑",
+            "iconName": "shield",
             "title": "Connecting GitHub with a Classic Token",
             "subtitle": "Secure Personal Access Token via Windows Credential Vault",
-            "desc": "Generate a Classic Personal Access Token on GitHub with 'repo' and 'read:user' permissions to securely authenticate.",
-            "bullet1": "🔒 OS Credential Security: Tokens are never stored in plaintext in SQLite or logs",
-            "bullet2": "🌐 Direct 1-click link to GitHub pre-configured token generator",
-            "bullet3": "🐙 Instantly browses and syncs your remote repositories"
+            "desc": "Generate a Classic Personal Access Token on GitHub with all permissions selected to securely authenticate without rate limits or access restrictions.",
+            "bullet1": "• OS Credential Security: Dual-layer encryption (Windows DPAPI + AES-256-GCM)",
+            "bullet2": "• Direct 1-click link to GitHub pre-configured token generator",
+            "bullet3": "• Instantly browses, tracks, and synchronizes your remote repositories"
         },
         {
-            "icon": "📦",
+            "iconName": "folder",
             "title": "Managing Projects & 1-Click Clone",
             "subtitle": "Add Local Folders or Clone Repositories",
             "desc": "Add any existing local directory on your drive, detect existing Git repositories, or initialize new ones. Remote GitHub repos can be cloned with a single click.",
-            "bullet1": "📁 Native folder picker integration with automatic path validation",
-            "bullet2": "📥 Clone directly to your chosen projects directory",
-            "bullet3": "📌 Pin your most active projects to the top of your dashboard"
+            "bullet1": "• Native folder picker integration with automatic path validation",
+            "bullet2": "• Clone directly to your chosen projects directory",
+            "bullet3": "• Pin your most active projects to the top of your dashboard"
         },
         {
-            "icon": "🌿",
+            "iconName": "branch",
             "title": "Branching, Diffs & Staging",
             "subtitle": "Full Git Workflow with Destructive Action Safeguards",
             "desc": "Inspect file modifications line-by-line with syntax-styled additions and deletions. Stage files, commit with messages, switch branches, and track remotes.",
-            "bullet1": "📝 Unified diff viewer with line numbers and hunk breakdown",
-            "bullet2": "🛡️ Active branch protection: Prevents deleting checked-out branches",
-            "bullet3": "⚠️ Safe discard and conflict alerts: Never silently overwrites your work"
+            "bullet1": "• Unified diff viewer with line numbers and hunk breakdown",
+            "bullet2": "• Active branch protection: Prevents deleting checked-out branches",
+            "bullet3": "• Safe discard and conflict alerts: Never silently overwrites your work"
         },
         {
-            "icon": "📊",
+            "iconName": "activity",
             "title": "Health Reports & Activity Audit Log",
             "subtitle": "Actionable Diagnostics & Real Performance Metrics",
             "desc": "Every project features an automated health report with a 0-100 score, 14-day activity trend charts, and tailored recommendations. Export reports and audit logs to CSV or JSON.",
-            "bullet1": "📈 Real 14-day commit frequency chart and contributor metrics",
-            "bullet2": "📜 Complete operation history tracking push, pull, fetch, and durations",
-            "bullet3": "📑 Export reports to CSV and JSON for reporting and compliance"
+            "bullet1": "• Real 14-day commit frequency chart and contributor metrics",
+            "bullet2": "• Complete operation history tracking push, pull, fetch, and durations",
+            "bullet3": "• Export reports to CSV and JSON for reporting and compliance"
         }
     ]
 
@@ -136,17 +136,18 @@ Rectangle {
 
             // Big Icon Pill
             Rectangle {
-                width: 60
-                height: 60
-                radius: 30
-                color: themeManager.accentMuted
-                border.color: themeManager.accent
+                width: 56
+                height: 56
+                radius: 12
+                color: Qt.rgba(56/255, 189/255, 248/255, 0.15)
+                border.color: Qt.rgba(56/255, 189/255, 248/255, 0.4)
                 border.width: 1
 
-                Text {
+                AppIcon {
                     anchors.centerIn: parent
-                    text: root.slides[root.currentStep].icon
-                    font.pixelSize: 28
+                    name: root.slides[root.currentStep].iconName
+                    size: 26
+                    color: themeManager.accent
                 }
             }
 
@@ -234,7 +235,8 @@ Rectangle {
                 Item { Layout.fillWidth: true }
 
                 ActionButton {
-                    text: root.currentStep === 4 ? "Get Started 🚀" : "Next →"
+                    text: root.currentStep === 4 ? "Get Started" : "Next →"
+                    iconName: root.currentStep === 4 ? "check" : ""
                     btnStyle: "primary"
                     onClicked: {
                         if (root.currentStep < 4) {

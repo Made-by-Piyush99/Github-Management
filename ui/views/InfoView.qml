@@ -37,9 +37,20 @@ ScrollView {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 12
+                    spacing: 14
 
-                    Text { text: "📖"; font.pixelSize: 28 }
+                    Rectangle {
+                        width: 40
+                        height: 40
+                        radius: 8
+                        color: Qt.rgba(56/255, 189/255, 248/255, 0.15)
+                        AppIcon {
+                            anchors.centerIn: parent
+                            name: "guide"
+                            size: 20
+                            color: themeManager.accent
+                        }
+                    }
 
                     Column {
                         spacing: 2
@@ -59,7 +70,8 @@ ScrollView {
                     Item { Layout.fillWidth: true }
 
                     ActionButton {
-                        text: "🎬 Start App Tour"
+                        text: "Start App Tour"
+                        iconName: "guide"
                         btnStyle: "primary"
                         onClicked: root.requestAppTour()
                     }
@@ -85,7 +97,7 @@ ScrollView {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 10
-                    Text { text: "🔑"; font.pixelSize: 18 }
+                    AppIcon { name: "shield"; size: 18; color: themeManager.accent }
                     Text {
                         text: "How to Generate & Connect a GitHub Classic Token"
                         color: themeManager.textPrimary
@@ -95,8 +107,8 @@ ScrollView {
                     Item { Layout.fillWidth: true }
 
                     ActionButton {
-                        text: "🌐 Generate Token on GitHub (All Scopes Pre-selected)"
-                        iconText: "↗️"
+                        text: "Generate Token on GitHub (All Scopes Pre-selected)"
+                        iconName: "external"
                         btnStyle: "primary"
                         small: true
                         onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?description=DevSyncStudio_FullAccess&scopes=repo,workflow,write:packages,read:packages,delete:packages,admin:org,admin:public_key,admin:repo_hook,admin:org_hook,gist,notifications,user,delete_repo,write:discussion,admin:enterprise,audit_log,codespace,project,admin:gpg_key")
@@ -211,7 +223,7 @@ ScrollView {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 10
-                    Text { text: "🚀"; font.pixelSize: 18 }
+                    AppIcon { name: "repo"; size: 18; color: themeManager.accent }
                     Text {
                         text: "How to Create a Repository with Description, README & License"
                         color: themeManager.textPrimary
@@ -222,7 +234,7 @@ ScrollView {
 
                     ActionButton {
                         text: "Go to GitHub Tab"
-                        iconText: "🐙"
+                        iconName: "github"
                         btnStyle: "secondary"
                         small: true
                         onClicked: root.navigateToTab(6)
@@ -330,7 +342,7 @@ ScrollView {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 10
-                    Text { text: "⚡"; font.pixelSize: 18 }
+                    AppIcon { name: "dashboard"; size: 18; color: themeManager.accent }
                     Text {
                         text: "Understanding the Application Tabs & Workflows"
                         color: themeManager.textPrimary
@@ -343,42 +355,42 @@ ScrollView {
                     model: [
                         {
                             "name": "Dashboard",
-                            "icon": "📊",
+                            "icon": "dashboard",
                             "desc": "Main overview showing total projects, Git repos, GitHub repos, uncommitted files, pending pushes, pending pulls, and real-time synchronization health. Clicking any project card opens its complete health report."
                         },
                         {
                             "name": "Projects",
-                            "icon": "📁",
+                            "icon": "project",
                             "desc": "Manage registered folders. Add existing local project directories, detect Git status, initialize Git with one click, pin favorite projects, and safely remove projects without touching local files."
                         },
                         {
                             "name": "Repositories",
-                            "icon": "📦",
+                            "icon": "repo",
                             "desc": "Central repository hub. Displays both local repositories and remote GitHub repositories. Uncloned repos feature a 1-click 'Clone to Local' button. Cloned repos offer Fetch, Pull, and Push."
                         },
                         {
                             "name": "Branches",
-                            "icon": "🌿",
+                            "icon": "branch",
                             "desc": "Local and remote branch management. Create feature branches, switch between branches, inspect upstream tracking, and safely delete branches with active branch protection."
                         },
                         {
                             "name": "Changes & Commits",
-                            "icon": "📝",
+                            "icon": "diff",
                             "desc": "Inspect working-tree modifications line by line with green (+) additions and red (-) deletions. Stage/unstage individual files or all, discard unwanted edits with confirmation, and commit/push."
                         },
                         {
                             "name": "Activity & Reports",
-                            "icon": "📜",
+                            "icon": "activity",
                             "desc": "Complete audit trail tracking all Git and sync operations with timestamps, durations, and error diagnostics. Filter by status (Success/Failed) and export logs to CSV or JSON."
                         },
                         {
                             "name": "GitHub",
-                            "icon": "🐙",
+                            "icon": "github",
                             "desc": "GitHub integration hub. Connect Personal Access Tokens, test connections, view API rate limits, browse your remote repositories, and create brand new repositories with README, .gitignore, and licenses."
                         },
                         {
                             "name": "Settings",
-                            "icon": "⚙️",
+                            "icon": "settings",
                             "desc": "Preferences and diagnostics. Toggle Dark/Light theme, configure custom Git executable paths, set GitHub API endpoints (GitHub Enterprise support), and adjust auto-refresh intervals."
                         }
                     ]
@@ -397,7 +409,11 @@ ScrollView {
                             anchors.rightMargin: 14
                             spacing: 12
 
-                            Text { text: modelData.icon; font.pixelSize: 16 }
+                            AppIcon {
+                                name: modelData.icon
+                                size: 16
+                                color: themeManager.accent
+                            }
 
                             Text {
                                 text: modelData.name

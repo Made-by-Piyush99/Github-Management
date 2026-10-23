@@ -11,21 +11,36 @@ Rectangle {
 
     signal tabSelected(int index)
 
-    width: 220
+    width: 230
     color: themeManager.bgSecondary
     border.color: themeManager.borderPrimary
     border.width: 1
 
-    readonly property var navItems: [
-        { title: "Dashboard", icon: "📊" },
-        { title: "Projects", icon: "📁" },
-        { title: "Repositories", icon: "📦" },
-        { title: "Branches", icon: "🌿" },
-        { title: "Changes & Commits", icon: "📝" },
-        { title: "Activity & Reports", icon: "📜" },
-        { title: "GitHub", icon: "🐙" },
-        { title: "Guide & Info", icon: "📖" },
-        { title: "Settings", icon: "⚙️" }
+    readonly property var sections: [
+        {
+            category: "WORKSPACE",
+            items: [
+                { index: 0, title: "Dashboard", icon: "dashboard" },
+                { index: 1, title: "Projects", icon: "project" },
+                { index: 2, title: "Repositories", icon: "repo" }
+            ]
+        },
+        {
+            category: "GIT WORKFLOW",
+            items: [
+                { index: 3, title: "Branches", icon: "branch" },
+                { index: 4, title: "Changes & Commits", icon: "diff" },
+                { index: 5, title: "Activity & Reports", icon: "activity" }
+            ]
+        },
+        {
+            category: "INTEGRATIONS & TOOLS",
+            items: [
+                { index: 6, title: "GitHub", icon: "github" },
+                { index: 7, title: "Guide & Info", icon: "guide" },
+                { index: 8, title: "Settings", icon: "settings" }
+            ]
+        }
     ]
 
     ColumnLayout {
@@ -42,38 +57,38 @@ Rectangle {
                 anchors.fill: parent
                 anchors.leftMargin: 16
                 anchors.rightMargin: 16
-                spacing: 10
+                spacing: 12
 
                 Rectangle {
-                    width: 32
-                    height: 32
+                    width: 34
+                    height: 34
                     radius: 8
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: themeManager.accent }
-                        GradientStop { position: 1.0; color: Qt.darker(themeManager.accent, 1.4) }
-                    }
+                    color: Qt.rgba(56/255, 189/255, 248/255, 0.15)
+                    border.color: Qt.rgba(56/255, 189/255, 248/255, 0.4)
+                    border.width: 1
 
-                    Text {
+                    AppIcon {
                         anchors.centerIn: parent
-                        text: "⚡"
-                        font.pixelSize: 16
-                        color: "#FFFFFF"
+                        name: "repo"
+                        size: 18
+                        color: themeManager.accent
                     }
                 }
 
                 Column {
                     Layout.fillWidth: true
-                    spacing: 1
+                    spacing: 2
 
                     Text {
                         text: "DevSync Studio"
                         color: themeManager.textPrimary
                         font.pixelSize: 14
-                        font.weight: Font.Bold
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 0.3
                     }
 
                     Text {
-                        text: "Project & Git Manager"
+                        text: "Git & GitHub Architect"
                         color: themeManager.textMuted
                         font.pixelSize: 10
                     }
@@ -96,69 +111,92 @@ Rectangle {
 
             Column {
                 width: root.width
-                spacing: 4
+                spacing: 14
                 topPadding: 12
                 bottomPadding: 12
 
                 Repeater {
-                    model: root.navItems
+                    model: root.sections
 
-                    Rectangle {
-                        id: navBtn
-                        width: root.width - 20
-                        height: 40
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        radius: 6
+                    Column {
+                        width: root.width
+                        spacing: 2
 
-                        property bool isActive: root.activeTab === index
-                        property bool isHovered: mouseArea.containsMouse
-
-                        color: isActive
-                               ? themeManager.accentMuted
-                               : (isHovered ? themeManager.bgCardHover : "transparent")
-
-                        Behavior on color { ColorAnimation { duration: 100 } }
-
-                        // Left active indicator pill
-                        Rectangle {
-                            visible: navBtn.isActive
-                            width: 3
-                            height: 20
-                            radius: 1.5
-                            color: themeManager.accent
-                            anchors.left: parent.left
-                            anchors.leftMargin: 4
-                            anchors.verticalCenter: parent.verticalCenter
+                        // Section Category Header
+                        Text {
+                            text: modelData.category
+                            color: themeManager.textMuted
+                            font.pixelSize: 10
+                            font.weight: Font.DemiBold
+                            font.letterSpacing: 1.0
+                            leftPadding: 20
+                            bottomPadding: 4
                         }
 
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 16
-                            anchors.rightMargin: 12
-                            spacing: 12
+                        Repeater {
+                            model: modelData.items
 
-                            Text {
-                                text: modelData.icon
-                                font.pixelSize: 16
+                            Rectangle {
+                                id: navBtn
+                                width: root.width - 20
+                                height: 36
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                radius: 6
+
+                                property bool isActive: root.activeTab === modelData.index
+                                property bool isHovered: mouseArea.containsMouse
+
+                                color: isActive
+                                       ? themeManager.accentMuted
+                                       : (isHovered ? themeManager.bgCardHover : "transparent")
+
+                                Behavior on color { ColorAnimation { duration: 100 } }
+
+                                // Left active indicator pill
+                                Rectangle {
+                                    visible: navBtn.isActive
+                                    width: 3
+                                    height: 18
+                                    radius: 1.5
+                                    color: themeManager.accent
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 3
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 12
+                                    spacing: 10
+
+                                    AppIcon {
+                                        name: modelData.icon
+                                        size: 16
+                                        color: navBtn.isActive
+                                               ? themeManager.accent
+                                               : (navBtn.isHovered ? themeManager.textPrimary : themeManager.textSecondary)
+                                    }
+
+                                    Text {
+                                        text: modelData.title
+                                        color: navBtn.isActive
+                                               ? themeManager.accent
+                                               : (navBtn.isHovered ? themeManager.textPrimary : themeManager.textSecondary)
+                                        font.pixelSize: 13
+                                        font.weight: navBtn.isActive ? Font.Medium : Font.Normal
+                                        Layout.fillWidth: true
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: mouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.tabSelected(modelData.index)
+                                }
                             }
-
-                            Text {
-                                text: modelData.title
-                                color: navBtn.isActive
-                                       ? themeManager.accent
-                                       : (navBtn.isHovered ? themeManager.textPrimary : themeManager.textSecondary)
-                                font.pixelSize: 13
-                                font.weight: navBtn.isActive ? Font.DemiBold : Font.Normal
-                                Layout.fillWidth: true
-                            }
-                        }
-
-                        MouseArea {
-                            id: mouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.tabSelected(index)
                         }
                     }
                 }
@@ -186,14 +224,14 @@ Rectangle {
 
                 // Backend status indicator
                 Rectangle {
-                    width: 8
-                    height: 8
-                    radius: 4
+                    width: 7
+                    height: 7
+                    radius: 3.5
                     color: root.backendConnected ? themeManager.success : themeManager.danger
                 }
 
                 Text {
-                    text: root.backendConnected ? "Connected" : "Reconnecting..."
+                    text: root.backendConnected ? "Engine Active" : "Offline"
                     color: themeManager.textSecondary
                     font.pixelSize: 11
                     Layout.fillWidth: true
@@ -202,7 +240,7 @@ Rectangle {
                 // Git version tag
                 Rectangle {
                     height: 20
-                    width: gitLabel.implicitWidth + 10
+                    width: gitLabel.implicitWidth + 12
                     radius: 4
                     color: themeManager.bgPrimary
                     border.color: themeManager.borderPrimary

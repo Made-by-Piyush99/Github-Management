@@ -5,6 +5,8 @@
 #include <QIcon>
 #include <QDir>
 #include <QDebug>
+#include <QFile>
+#include <QTextStream>
 
 #include "cpp/BackendBridge.h"
 #include "cpp/ProjectModel.h"
@@ -12,8 +14,18 @@
 #include "cpp/FileStatusModel.h"
 #include "cpp/ThemeManager.h"
 
+void customLogHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QFile logFile("qml_debug.log");
+    if (logFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        QTextStream ts(&logFile);
+        ts << msg << "\n";
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(customLogHandler);
     // High DPI scaling is handled automatically in Qt 6
     QApplication app(argc, argv);
 

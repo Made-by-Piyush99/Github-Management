@@ -57,8 +57,13 @@ Rectangle {
 
                 Row {
                     anchors.centerIn: parent
-                    spacing: 4
-                    Text { text: "🌿"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                    spacing: 5
+                    AppIcon {
+                        name: "branch"
+                        size: 11
+                        color: themeManager.accent
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                     Text {
                         id: branchLabel
                         text: projectData.current_branch || ""
@@ -148,21 +153,41 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 12
 
-            Text {
-                text: "📁 " + (projectData.local_path || "")
-                color: themeManager.textMuted
-                font.pixelSize: 11
-                elide: Text.ElideMiddle
-                Layout.maximumWidth: 280
+            Row {
+                spacing: 5
+                AppIcon {
+                    name: "folder"
+                    size: 13
+                    color: themeManager.textMuted
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                Text {
+                    text: projectData.local_path || ""
+                    color: themeManager.textMuted
+                    font.pixelSize: 11
+                    elide: Text.ElideMiddle
+                    width: Math.min(260, implicitWidth)
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
-            Text {
+            Row {
                 visible: !!projectData.git_remote
-                text: "🔗 " + (projectData.git_remote || "")
-                color: themeManager.accent
-                font.pixelSize: 11
-                elide: Text.ElideMiddle
-                Layout.maximumWidth: 240
+                spacing: 5
+                AppIcon {
+                    name: "github"
+                    size: 13
+                    color: themeManager.accent
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                Text {
+                    text: projectData.git_remote || ""
+                    color: themeManager.accent
+                    font.pixelSize: 11
+                    elide: Text.ElideMiddle
+                    width: Math.min(240, implicitWidth)
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
             Item { Layout.fillWidth: true }
@@ -198,7 +223,7 @@ Rectangle {
 
             ActionButton {
                 text: "Folder"
-                iconText: "📁"
+                iconName: "folder"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.quickAction("folder", projectData)
@@ -206,7 +231,7 @@ Rectangle {
 
             ActionButton {
                 text: "Changes"
-                iconText: "📝"
+                iconName: "diff"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.quickAction("changes", projectData)
@@ -214,7 +239,7 @@ Rectangle {
 
             ActionButton {
                 text: "Pull"
-                iconText: "⬇️"
+                iconName: "pull"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.quickAction("pull", projectData)
@@ -222,7 +247,7 @@ Rectangle {
 
             ActionButton {
                 text: "Push"
-                iconText: "⬆️"
+                iconName: "push"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.quickAction("push", projectData)
@@ -230,7 +255,7 @@ Rectangle {
 
             ActionButton {
                 text: "Branch"
-                iconText: "🌿"
+                iconName: "branch"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.quickAction("branch", projectData)
@@ -238,7 +263,7 @@ Rectangle {
 
             ActionButton {
                 text: "Report"
-                iconText: "📊"
+                iconName: "activity"
                 btnStyle: "subtle"
                 small: true
                 onClicked: root.quickAction("report", projectData)

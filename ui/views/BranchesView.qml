@@ -87,7 +87,7 @@ ScrollView {
 
             ActionButton {
                 text: "New Branch"
-                iconText: "🌿"
+                iconName: "branch"
                 btnStyle: "primary"
                 onClicked: {
                     var idx = projectModel.indexOf(root.selectedProjectId);
@@ -148,9 +148,10 @@ ScrollView {
                         anchors.rightMargin: 16
                         spacing: 12
 
-                        Text {
-                            text: modelData.is_current ? "⭐" : "🌿"
-                            font.pixelSize: 14
+                        AppIcon {
+                            name: modelData.is_current ? "check" : "branch"
+                            size: 14
+                            color: modelData.is_current ? themeManager.accent : themeManager.textSecondary
                         }
 
                         Column {
@@ -201,7 +202,7 @@ ScrollView {
                         ActionButton {
                             visible: !modelData.is_current
                             text: "Switch"
-                            iconText: "🔀"
+                            iconName: "branch"
                             btnStyle: "secondary"
                             small: true
                             onClicked: {
@@ -229,7 +230,7 @@ ScrollView {
                         ActionButton {
                             visible: !modelData.is_current
                             text: "Delete"
-                            iconText: "🗑️"
+                            iconName: "trash"
                             btnStyle: "subtle"
                             small: true
                             onClicked: {
@@ -295,7 +296,7 @@ ScrollView {
                         anchors.rightMargin: 16
                         spacing: 10
 
-                        Text { text: "☁️"; font.pixelSize: 13 }
+                        AppIcon { name: "github"; size: 13; color: themeManager.textMuted }
 
                         Text {
                             text: modelData.name

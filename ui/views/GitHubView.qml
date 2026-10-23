@@ -98,10 +98,11 @@ ScrollView {
                         border.color: themeManager.borderPrimary
                         border.width: 1
 
-                        Text {
+                        AppIcon {
                             anchors.centerIn: parent
-                            text: "🐙"
-                            font.pixelSize: 22
+                            name: "github"
+                            size: 22
+                            color: themeManager.accent
                         }
                     }
 
@@ -143,7 +144,7 @@ ScrollView {
 
                     ActionButton {
                         text: "Disconnect"
-                        iconText: "🔌"
+                        iconName: "trash"
                         btnStyle: "danger"
                         small: true
                         onClicked: {
@@ -186,7 +187,7 @@ ScrollView {
 
                         ActionButton {
                             text: "Generate Token on GitHub (All Scopes Pre-selected)"
-                            iconText: "🌐"
+                            iconName: "external"
                             btnStyle: "subtle"
                             small: true
                             onClicked: backendBridge.openUrl("https://github.com/settings/tokens/new?description=DevSyncStudio_FullAccess&scopes=repo,workflow,write:packages,read:packages,delete:packages,admin:org,admin:public_key,admin:repo_hook,admin:org_hook,gist,notifications,user,delete_repo,write:discussion,admin:enterprise,audit_log,codespace,project,admin:gpg_key")
@@ -222,8 +223,10 @@ ScrollView {
                                 }
 
                                 Text {
-                                    text: root.showToken ? "🙈" : "👁️"
-                                    font.pixelSize: 14
+                                    text: root.showToken ? "Hide" : "Show"
+                                    color: themeManager.textMuted
+                                    font.pixelSize: 11
+                                    font.weight: Font.Medium
 
                                     MouseArea {
                                         anchors.fill: parent
@@ -236,7 +239,7 @@ ScrollView {
 
                         ActionButton {
                             text: "Save Token"
-                            iconText: "💾"
+                            iconName: "shield"
                             btnStyle: "primary"
                             onClicked: {
                                 var val = tokenField.text.trim();
@@ -256,7 +259,7 @@ ScrollView {
 
                         ActionButton {
                             text: "Test Connection"
-                            iconText: "⚡"
+                            iconName: "refresh"
                             btnStyle: "secondary"
                             busy: root.isTesting
                             onClicked: root.checkConnection()
@@ -268,15 +271,20 @@ ScrollView {
                         spacing: 10
                         Rectangle {
                             height: 22
-                            width: encLabel.implicitWidth + 14
+                            width: encLabel.implicitWidth + 24
                             radius: 4
                             color: Qt.rgba(themeManager.success.r, themeManager.success.g, themeManager.success.b, 0.15)
                             border.color: themeManager.success
                             border.width: 1
                             Row {
                                 anchors.centerIn: parent
-                                spacing: 4
-                                Text { text: "🔒"; font.pixelSize: 10; anchors.verticalCenter: parent.verticalCenter }
+                                spacing: 6
+                                AppIcon {
+                                    name: "shield"
+                                    size: 11
+                                    color: themeManager.success
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
                                 Text {
                                     id: encLabel
                                     text: "End-to-End Encrypted (Windows DPAPI + AES-256-GCM)"
@@ -289,7 +297,7 @@ ScrollView {
                         }
                         Item { Layout.fillWidth: true }
                         Text {
-                            text: "💡 Click button above: opens GitHub with ALL check boxes pre-selected."
+                            text: "All required repository & organization scopes will be pre-configured."
                             color: themeManager.accent
                             font.pixelSize: 11
                         }
@@ -319,7 +327,7 @@ ScrollView {
 
                 ActionButton {
                     text: "Create New GitHub Repo"
-                    iconText: "➕"
+                    iconName: "plus"
                     btnStyle: "primary"
                     small: true
                     onClicked: {
@@ -345,9 +353,10 @@ ScrollView {
                         anchors.rightMargin: 16
                         spacing: 12
 
-                        Text {
-                            text: modelData.private ? "🔒" : "🌐"
-                            font.pixelSize: 14
+                        AppIcon {
+                            name: modelData.private ? "shield" : "repo"
+                            size: 15
+                            color: themeManager.accent
                         }
 
                         Column {
@@ -368,15 +377,9 @@ ScrollView {
 
                         Item { Layout.fillWidth: true }
 
-                        Text {
-                            text: "⭐ " + modelData.stargazers_count
-                            color: themeManager.textSecondary
-                            font.pixelSize: 11
-                        }
-
                         ActionButton {
                             text: "Clone to Local"
-                            iconText: "📥"
+                            iconName: "pull"
                             btnStyle: "primary"
                             small: true
                             onClicked: {
@@ -395,7 +398,7 @@ ScrollView {
 
                         ActionButton {
                             text: "Open"
-                            iconText: "↗️"
+                            iconName: "external"
                             btnStyle: "subtle"
                             small: true
                             onClicked: backendBridge.openUrl(modelData.html_url)

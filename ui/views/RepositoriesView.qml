@@ -85,14 +85,14 @@ ScrollView {
 
             ActionButton {
                 text: "Create New Repository"
-                iconText: "➕"
+                iconName: "plus"
                 btnStyle: "primary"
                 onClicked: appWindow.openCreateRepoDialog()
             }
 
             ActionButton {
                 text: "Refresh"
-                iconText: "🔄"
+                iconName: "refresh"
                 btnStyle: "subtle"
                 busy: root.loading
                 onClicked: {
@@ -141,12 +141,13 @@ ScrollView {
 
             Column {
                 anchors.centerIn: parent
-                spacing: 10
+                spacing: 12
 
-                Text {
+                AppIcon {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "📦"
-                    font.pixelSize: 32
+                    name: "repo"
+                    size: 32
+                    color: themeManager.accent
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -197,9 +198,10 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 10
 
-                        Text {
-                            text: rData.is_cloned ? "📦" : "☁️"
-                            font.pixelSize: 16
+                        AppIcon {
+                            name: rData.is_cloned ? "repo" : "github"
+                            size: 16
+                            color: rData.is_cloned ? themeManager.accent : themeManager.textSecondary
                         }
 
                         Column {
@@ -231,7 +233,7 @@ ScrollView {
                         ActionButton {
                             visible: !rData.is_cloned
                             text: "Clone to Local"
-                            iconText: "📥"
+                            iconName: "pull"
                             btnStyle: "primary"
                             small: true
                             onClicked: {
@@ -253,7 +255,7 @@ ScrollView {
                         ActionButton {
                             visible: !!rData.is_cloned
                             text: "Fetch"
-                            iconText: "🔄"
+                            iconName: "refresh"
                             btnStyle: "secondary"
                             small: true
                             onClicked: {
@@ -273,7 +275,7 @@ ScrollView {
                         ActionButton {
                             visible: !!rData.is_cloned
                             text: "Pull"
-                            iconText: "⬇️"
+                            iconName: "pull"
                             btnStyle: "secondary"
                             small: true
                             onClicked: {
@@ -293,7 +295,7 @@ ScrollView {
                         ActionButton {
                             visible: !!rData.is_cloned
                             text: "Push"
-                            iconText: "⬆️"
+                            iconName: "push"
                             btnStyle: "primary"
                             small: true
                             onClicked: {
@@ -313,7 +315,7 @@ ScrollView {
                         ActionButton {
                             visible: !!rData.html_url
                             text: "Open GitHub"
-                            iconText: "↗️"
+                            iconName: "external"
                             btnStyle: "subtle"
                             small: true
                             onClicked: backendBridge.openUrl(rData.html_url)
@@ -325,23 +327,45 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 16
 
-                        Text {
-                            text: rData.is_cloned ? ("📁 Local Path: " + rData.local_path) : "☁️ Remote Only (Not cloned to local disk)"
-                            color: themeManager.textMuted
-                            font.pixelSize: 11
-                            elide: Text.ElideMiddle
-                            Layout.fillWidth: true
+                        Row {
+                            spacing: 6
+                            AppIcon {
+                                name: rData.is_cloned ? "folder" : "github"
+                                size: 12
+                                color: themeManager.textMuted
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                text: rData.is_cloned ? ("Local: " + rData.local_path) : "Remote Only (Not cloned to local disk)"
+                                color: themeManager.textMuted
+                                font.pixelSize: 11
+                                elide: Text.ElideMiddle
+                                width: Math.min(320, implicitWidth)
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
                         }
 
-                        Text {
-                            text: "🌿 Branch: " + (rData.current_branch || "main")
-                            color: themeManager.textSecondary
-                            font.pixelSize: 11
+                        Row {
+                            spacing: 5
+                            AppIcon {
+                                name: "branch"
+                                size: 11
+                                color: themeManager.accent
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                text: rData.current_branch || "main"
+                                color: themeManager.textSecondary
+                                font.pixelSize: 11
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
                         }
+
+                        Item { Layout.fillWidth: true }
 
                         Text {
                             visible: !!rData.is_cloned
-                            text: "Sync: " + (rData.ahead || 0) + " ahead, " + (rData.behind || 0) + " behind"
+                            text: (rData.ahead || 0) + " ahead, " + (rData.behind || 0) + " behind"
                             color: themeManager.textSecondary
                             font.pixelSize: 11
                         }

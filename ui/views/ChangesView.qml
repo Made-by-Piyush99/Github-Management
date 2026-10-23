@@ -95,7 +95,7 @@ Item {
 
                     ActionButton {
                         text: ""
-                        iconText: "🔄"
+                        iconName: "refresh"
                         btnStyle: "subtle"
                         small: true
                         onClicked: root.loadStatus()
@@ -180,9 +180,25 @@ Item {
                                     }
                                 }
 
-                                Text {
-                                    text: model.is_untracked ? "❓" : (model.is_conflict ? "⚠️" : (model.is_staged ? "✅" : "📝"))
-                                    font.pixelSize: 12
+                                Rectangle {
+                                    width: 18
+                                    height: 18
+                                    radius: 3
+                                    color: model.is_conflict ? Qt.rgba(239/255, 68/255, 68/255, 0.15)
+                                         : (model.is_untracked ? Qt.rgba(245/255, 158/255, 11/255, 0.15)
+                                         : (model.is_staged ? Qt.rgba(16/255, 185/255, 129/255, 0.15)
+                                         : Qt.rgba(56/255, 189/255, 248/255, 0.15)))
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: model.is_conflict ? "C" : (model.is_untracked ? "U" : (model.is_staged ? "A" : "M"))
+                                        color: model.is_conflict ? themeManager.danger
+                                             : (model.is_untracked ? themeManager.warning
+                                             : (model.is_staged ? themeManager.success
+                                             : themeManager.accent))
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                    }
                                 }
 
                                 Text {
@@ -285,7 +301,7 @@ Item {
                         ActionButton {
                             Layout.fillWidth: true
                             text: "Commit"
-                            iconText: "💾"
+                            iconName: "commit"
                             btnStyle: "primary"
                             enabled: fileStatusModel.stagedCount > 0 && commitInput.text.trim() !== ""
                             onClicked: {
@@ -309,7 +325,7 @@ Item {
 
                         ActionButton {
                             text: "Commit & Push"
-                            iconText: "⬆️"
+                            iconName: "push"
                             btnStyle: "secondary"
                             enabled: fileStatusModel.stagedCount > 0 && commitInput.text.trim() !== ""
                             onClicked: {

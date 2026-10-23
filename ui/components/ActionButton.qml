@@ -6,6 +6,7 @@ Item {
 
     property string text: ""
     property string iconText: ""
+    property string iconName: ""
     property string btnStyle: "secondary" // primary, secondary, danger, subtle
     property bool small: false
     property bool busy: false
@@ -60,8 +61,16 @@ Item {
             anchors.centerIn: parent
             spacing: 6
 
+            AppIcon {
+                visible: root.iconName !== "" && !root.busy
+                name: root.iconName
+                size: root.small ? 13 : 15
+                color: root.getFgColor()
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
             Text {
-                visible: root.iconText !== "" && !root.busy
+                visible: root.iconName === "" && root.iconText !== "" && !root.busy
                 text: root.iconText
                 color: root.getFgColor()
                 font.pixelSize: root.small ? 12 : 14

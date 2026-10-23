@@ -20,85 +20,85 @@ void ThemeManager::toggleTheme()
 
 QColor ThemeManager::bgPrimary() const
 {
-    return m_isDark ? QColor("#0F1117") : QColor("#F6F8FA");
+    return m_isDark ? QColor("#0B0E14") : QColor("#F8FAFC");
 }
 
 QColor ThemeManager::bgSecondary() const
 {
-    return m_isDark ? QColor("#161B22") : QColor("#FFFFFF");
+    return m_isDark ? QColor("#111620") : QColor("#FFFFFF");
 }
 
 QColor ThemeManager::bgCard() const
 {
-    return m_isDark ? QColor("#1A202C") : QColor("#FFFFFF");
+    return m_isDark ? QColor("#161D2A") : QColor("#FFFFFF");
 }
 
 QColor ThemeManager::bgCardHover() const
 {
-    return m_isDark ? QColor("#242C3D") : QColor("#F3F4F6");
+    return m_isDark ? QColor("#1E2738") : QColor("#F1F5F9");
 }
 
 QColor ThemeManager::bgInput() const
 {
-    return m_isDark ? QColor("#12161F") : QColor("#FFFFFF");
+    return m_isDark ? QColor("#0E131C") : QColor("#FFFFFF");
 }
 
 QColor ThemeManager::borderPrimary() const
 {
-    return m_isDark ? QColor("#2D3748") : QColor("#D0D7DE");
+    return m_isDark ? QColor("#222C3D") : QColor("#E2E8F0");
 }
 
 QColor ThemeManager::borderSecondary() const
 {
-    return m_isDark ? QColor("#3B4456") : QColor("#E1E4E8");
+    return m_isDark ? QColor("#313F56") : QColor("#CBD5E1");
 }
 
 QColor ThemeManager::textPrimary() const
 {
-    return m_isDark ? QColor("#F0F6FC") : QColor("#1F2328");
+    return m_isDark ? QColor("#F1F5F9") : QColor("#0F172A");
 }
 
 QColor ThemeManager::textSecondary() const
 {
-    return m_isDark ? QColor("#8B949E") : QColor("#59636E");
+    return m_isDark ? QColor("#94A3B8") : QColor("#475569");
 }
 
 QColor ThemeManager::textMuted() const
 {
-    return m_isDark ? QColor("#64748B") : QColor("#8C959F");
+    return m_isDark ? QColor("#64748B") : QColor("#94A3B8");
 }
 
 QColor ThemeManager::accent() const
 {
-    return m_isDark ? QColor("#3B82F6") : QColor("#0969DA");
+    return m_isDark ? QColor("#38BDF8") : QColor("#0284C7");
 }
 
 QColor ThemeManager::accentHover() const
 {
-    return m_isDark ? QColor("#60A5FA") : QColor("#218BFF");
+    return m_isDark ? QColor("#7DD3FC") : QColor("#0369A1");
 }
 
 QColor ThemeManager::accentMuted() const
 {
-    return m_isDark ? QColor(59, 130, 246, 38) : QColor(9, 105, 218, 30);
+    return m_isDark ? QColor(56, 189, 248, 28) : QColor(2, 132, 199, 22);
 }
 
 QColor ThemeManager::success() const
 {
-    return m_isDark ? QColor("#22C55E") : QColor("#16A34A");
+    return m_isDark ? QColor("#10B981") : QColor("#059669");
 }
 
 QColor ThemeManager::warning() const
 {
-    return m_isDark ? QColor("#EAB308") : QColor("#CA8A04");
+    return m_isDark ? QColor("#F59E0B") : QColor("#D97706");
 }
 
 QColor ThemeManager::danger() const
 {
-    return m_isDark ? QColor("#EF4444") : QColor("#DC2626");
+    return m_isDark ? QColor("#F43F5E") : QColor("#E11D48");
 }
 
 QColor ThemeManager::info() const
 {
-    return m_isDark ? QColor("#06B6D4") : QColor("#0284C7");
+    return m_isDark ? QColor("#38BDF8") : QColor("#0284C7");
 }

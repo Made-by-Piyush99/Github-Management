@@ -222,14 +222,14 @@ Item {
 
                                 ActionButton {
                                     text: "Open Folder"
-                                    iconText: "📁"
+                                    iconName: "folder"
                                     btnStyle: "secondary"
                                     onClicked: backendBridge.openFolder(root.projectDetails.project.local_path)
                                 }
 
                                 ActionButton {
                                     text: "Fetch"
-                                    iconText: "🔄"
+                                    iconName: "refresh"
                                     btnStyle: "secondary"
                                     onClicked: {
                                         backendBridge.sendRequest("git.fetch", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s) {
@@ -240,7 +240,7 @@ Item {
 
                                 ActionButton {
                                     text: "Pull"
-                                    iconText: "⬇️"
+                                    iconName: "pull"
                                     btnStyle: "secondary"
                                     onClicked: {
                                         backendBridge.sendRequest("git.pull", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s) {
@@ -251,7 +251,7 @@ Item {
 
                                 ActionButton {
                                     text: "Push"
-                                    iconText: "⬆️"
+                                    iconName: "push"
                                     btnStyle: "primary"
                                     onClicked: {
                                         backendBridge.sendRequest("git.push", {"path": root.projectDetails.project.local_path, "project_id": root.projectId}, function(s) {
@@ -346,7 +346,7 @@ Item {
 
                                 ActionButton {
                                     text: "Export Report CSV"
-                                    iconText: "📊"
+                                    iconName: "activity"
                                     btnStyle: "secondary"
                                     small: true
                                     onClicked: {
@@ -361,7 +361,7 @@ Item {
 
                                 ActionButton {
                                     text: "Export Report JSON"
-                                    iconText: "📄"
+                                    iconName: "diff"
                                     btnStyle: "secondary"
                                     small: true
                                     onClicked: {
@@ -457,7 +457,11 @@ Item {
                                             anchors.rightMargin: 12
                                             spacing: 10
 
-                                            Text { text: "💡"; font.pixelSize: 13 }
+                                            AppIcon {
+                                                name: "guide"
+                                                size: 13
+                                                color: themeManager.accent
+                                            }
                                             Text {
                                                 text: modelData
                                                 color: themeManager.textPrimary
@@ -630,7 +634,7 @@ Item {
 
                                 ActionButton {
                                     text: "Update Remote"
-                                    iconText: "🔗"
+                                    iconName: "external"
                                     btnStyle: "primary"
                                     onClicked: {
                                         var url = remoteUrlInput.text.trim();

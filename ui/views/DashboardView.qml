@@ -100,7 +100,7 @@ ScrollView {
 
                 ActionButton {
                     text: "Create New Repository"
-                    iconText: "➕"
+                    iconName: "plus"
                     btnStyle: "primary"
                     small: true
                     onClicked: root.requestQuickAction("create_repo", null)
@@ -118,7 +118,7 @@ ScrollView {
                     title: "Total Projects"
                     value: "" + root.totalProjects
                     subtext: "Tracked in workspace"
-                    iconText: "📁"
+                    iconName: "project"
                     highlightColor: themeManager.accent
                 }
 
@@ -127,7 +127,7 @@ ScrollView {
                     title: "Git Repositories"
                     value: "" + root.gitReposCount
                     subtext: "Active local repositories"
-                    iconText: "🌿"
+                    iconName: "branch"
                     highlightColor: themeManager.success
                 }
 
@@ -136,7 +136,7 @@ ScrollView {
                     title: "GitHub Repositories"
                     value: "" + root.githubReposCount
                     subtext: root.githubRemoteCount > 0 ? (root.githubRemoteCount + " on connected account") : "Linked to remote"
-                    iconText: "🐙"
+                    iconName: "github"
                     highlightColor: themeManager.info
                 }
 
@@ -145,7 +145,7 @@ ScrollView {
                     title: "Uncommitted Changes"
                     value: "" + root.uncommittedCount
                     subtext: "Require commit / review"
-                    iconText: "📝"
+                    iconName: "diff"
                     highlightColor: themeManager.warning
                     isWarning: root.uncommittedCount > 0
                 }
@@ -155,7 +155,7 @@ ScrollView {
                     title: "Pending Pushes"
                     value: "" + root.pendingPushesCount
                     subtext: "Ahead of remote"
-                    iconText: "⬆️"
+                    iconName: "push"
                     highlightColor: themeManager.accent
                 }
 
@@ -164,7 +164,7 @@ ScrollView {
                     title: "Pending Pulls"
                     value: "" + root.pendingPullsCount
                     subtext: "Behind remote"
-                    iconText: "⬇️"
+                    iconName: "pull"
                     highlightColor: themeManager.warning
                 }
 
@@ -173,7 +173,7 @@ ScrollView {
                     title: "Sync Errors & Conflicts"
                     value: "" + root.syncErrorsCount
                     subtext: root.syncErrorsCount === 0 ? "All remotes healthy" : "Requires resolution"
-                    iconText: "⚠️"
+                    iconName: "shield"
                     highlightColor: themeManager.danger
                     isWarning: root.syncErrorsCount > 0
                 }
@@ -183,7 +183,7 @@ ScrollView {
                     title: "Synchronization Status"
                     value: root.syncErrorsCount > 0 ? "Issues" : "Healthy"
                     subtext: "Verified local & remote"
-                    iconText: "🔄"
+                    iconName: "refresh"
                     highlightColor: root.syncErrorsCount > 0 ? themeManager.danger : themeManager.success
                 }
             }
@@ -263,7 +263,7 @@ ScrollView {
 
                 ActionButton {
                     text: "Clone All to Workspace"
-                    iconText: "⚡"
+                    iconName: "pull"
                     btnStyle: "primary"
                     small: true
                     onClicked: {
@@ -310,9 +310,10 @@ ScrollView {
                         anchors.rightMargin: 16
                         spacing: 12
 
-                        Text {
-                            text: itemData.is_cloned ? "📦" : "☁️"
-                            font.pixelSize: 16
+                        AppIcon {
+                            name: itemData.is_cloned ? "repo" : "github"
+                            size: 18
+                            color: itemData.is_cloned ? themeManager.accent : themeManager.textSecondary
                         }
 
                         Column {
@@ -326,7 +327,7 @@ ScrollView {
                                     font.weight: Font.DemiBold
                                 }
                                 Text {
-                                    text: itemData.private ? "🔒 Private" : "🌐 Public"
+                                    text: itemData.private ? "Private" : "Public"
                                     color: themeManager.textMuted
                                     font.pixelSize: 11
                                 }
@@ -350,7 +351,7 @@ ScrollView {
                         ActionButton {
                             visible: !itemData.is_cloned
                             text: "Clone & Track"
-                            iconText: "📥"
+                            iconName: "pull"
                             btnStyle: "primary"
                             small: true
                             onClicked: {
@@ -371,7 +372,7 @@ ScrollView {
                         ActionButton {
                             visible: !!itemData.is_cloned
                             text: "View Details"
-                            iconText: "🔍"
+                            iconName: "search"
                             btnStyle: "secondary"
                             small: true
                             onClicked: root.openProjectDetails(itemData.project_id)
@@ -379,7 +380,7 @@ ScrollView {
 
                         ActionButton {
                             text: "Open"
-                            iconText: "↗️"
+                            iconName: "external"
                             btnStyle: "subtle"
                             small: true
                             onClicked: backendBridge.openUrl(itemData.html_url)
@@ -403,10 +404,11 @@ ScrollView {
                 anchors.centerIn: parent
                 spacing: 12
 
-                Text {
+                AppIcon {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "🚀"
-                    font.pixelSize: 32
+                    name: "repo"
+                    size: 32
+                    color: themeManager.accent
                 }
 
                 Text {
@@ -427,7 +429,7 @@ ScrollView {
                 ActionButton {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "Add Project Folder"
-                    iconText: "➕"
+                    iconName: "plus"
                     btnStyle: "primary"
                     onClicked: root.requestQuickAction("add_project", null)
                 }

@@ -57,14 +57,14 @@ ScrollView {
 
             ActionButton {
                 text: "Create New Repository"
-                iconText: "➕"
+                iconName: "plus"
                 btnStyle: "primary"
                 onClicked: appWindow.openCreateRepoDialog()
             }
 
             ActionButton {
                 text: "Add Local Folder"
-                iconText: "📂"
+                iconName: "folder"
                 btnStyle: "secondary"
                 onClicked: {
                     var folder = backendBridge.selectFolder("Choose Project Directory", "");
@@ -83,11 +83,11 @@ ScrollView {
 
             ActionButton {
                 text: "Clone from GitHub"
-                iconText: "📥"
+                iconName: "pull"
                 btnStyle: "primary"
                 onClicked: {
-                    // Navigate to Repositories tab or GitHub tab to clone
-                    appWindow.activeTab = 2; // Repositories view
+                    // Navigate to Repositories view
+                    appWindow.activeTab = 2;
                 }
             }
         }
@@ -173,9 +173,10 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 10
 
-                        Text {
-                            text: pData.is_pinned ? "📌" : "📁"
-                            font.pixelSize: 16
+                        AppIcon {
+                            name: pData.is_pinned ? "check" : "folder"
+                            size: 16
+                            color: pData.is_pinned ? themeManager.accent : themeManager.textSecondary
                         }
 
                         Text {
@@ -195,7 +196,7 @@ ScrollView {
                         ActionButton {
                             visible: !pData.is_git_repo
                             text: "Initialize Git"
-                            iconText: "⚡"
+                            iconName: "branch"
                             btnStyle: "primary"
                             small: true
                             onClicked: {
@@ -220,7 +221,7 @@ ScrollView {
 
                         ActionButton {
                             text: pData.is_pinned ? "Unpin" : "Pin"
-                            iconText: "📌"
+                            iconName: "check"
                             btnStyle: "subtle"
                             small: true
                             onClicked: {
@@ -232,7 +233,7 @@ ScrollView {
 
                         ActionButton {
                             text: "Remove"
-                            iconText: "🗑️"
+                            iconName: "trash"
                             btnStyle: "subtle"
                             small: true
                             onClicked: {
@@ -309,7 +310,7 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 10
 
-                    Text { text: "🐙"; font.pixelSize: 20 }
+                    AppIcon { name: "github"; size: 20; color: themeManager.accent }
                     Text {
                         text: "Repositories Available on GitHub (" + root.githubRepos.length + ")"
                         color: themeManager.textPrimary
@@ -342,7 +343,7 @@ ScrollView {
                             anchors.rightMargin: 14
                             spacing: 10
 
-                            Text { text: "📦"; font.pixelSize: 13 }
+                            AppIcon { name: "repo"; size: 14; color: themeManager.textSecondary }
                             Text {
                                 text: modelData.name
                                 color: themeManager.textPrimary
@@ -361,7 +362,7 @@ ScrollView {
 
                             ActionButton {
                                 text: "Clone to Local"
-                                iconText: "📥"
+                                iconName: "pull"
                                 btnStyle: "primary"
                                 small: true
                                 onClicked: {

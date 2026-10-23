@@ -8,6 +8,7 @@ Rectangle {
     property string value: "0"
     property string subtext: ""
     property string iconText: "📊"
+    property string iconName: ""
     property color highlightColor: themeManager.accent
     property bool isWarning: false
 
@@ -37,7 +38,16 @@ Rectangle {
                 color: Qt.rgba(root.highlightColor.r, root.highlightColor.g, root.highlightColor.b, 0.12)
                 anchors.verticalCenter: parent.verticalCenter
 
+                AppIcon {
+                    visible: root.iconName !== ""
+                    anchors.centerIn: parent
+                    name: root.iconName
+                    size: 18
+                    color: root.highlightColor
+                }
+
                 Text {
+                    visible: root.iconName === ""
                     anchors.centerIn: parent
                     text: root.iconText
                     font.pixelSize: 18
