@@ -199,6 +199,28 @@ Item {
                     ctx.lineTo(12 + Math.cos(a) * 8.5, 12 + Math.sin(a) * 8.5);
                     ctx.stroke();
                 }
+            } else if (n === "code" || n === "terminal") {
+                // Code brackets < / >
+                ctx.beginPath();
+                ctx.moveTo(8, 7); ctx.lineTo(3, 12); ctx.lineTo(8, 17);
+                ctx.moveTo(16, 7); ctx.lineTo(21, 12); ctx.lineTo(16, 17);
+                ctx.moveTo(14, 5); ctx.lineTo(10, 19);
+                ctx.stroke();
+            } else if (n === "file" || n === "document") {
+                // File sheet
+                ctx.beginPath();
+                ctx.moveTo(5, 3); ctx.lineTo(14, 3); ctx.lineTo(19, 8); ctx.lineTo(19, 21); ctx.lineTo(5, 21); ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(14, 3); ctx.lineTo(14, 8); ctx.lineTo(19, 8);
+                ctx.stroke();
+            } else if (n === "save" || n === "disk") {
+                // Save floppy icon
+                ctx.beginPath();
+                ctx.moveTo(4, 4); ctx.lineTo(16, 4); ctx.lineTo(20, 8); ctx.lineTo(20, 20); ctx.lineTo(4, 20); ctx.closePath();
+                ctx.stroke();
+                ctx.strokeRect(8, 4, 8, 5);
+                ctx.strokeRect(7, 13, 10, 7);
             } else if (n === "moon") {
                 ctx.beginPath();
                 ctx.arc(12, 12, 7, Math.PI * 0.2, Math.PI * 1.5);

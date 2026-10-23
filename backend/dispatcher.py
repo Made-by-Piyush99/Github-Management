@@ -777,3 +777,126 @@ class Dispatcher:
             "python_version": sys.version,
             "database_path": self.db.db_path,
         }
+
+    # ==========================
+    # Studio File Handlers
+    # ==========================
+
+    def _cmd_files_list_tree(self, args: Dict[str, Any]) -> Any:
+        proj_path = args.get("path")
+        sub_dir = args.get("sub_dir", "")
+        if not proj_path or not os.path.exists(proj_path):
+            return {"success": False, "error": "Path does not exist", "items": []}
+
+        target_dir = os.path.normpath(os.path.join(proj_path, sub_dir)) if sub_dir else os.path.normpath(proj_path)
+        if not os.path.exists(target_dir) or not os.path.isdir(target_dir):
+            return {"success": False, "error": "Directory does not exist", "items": []}
+
+        # Check git status for modified files
+        git_modified = set()
+        git_untracked = set()
+        status_res = self.git_cli.run(["status", "--porcelain"], cwd=proj_path)
+        if status_res.ok and status_res.stdout:
+            for sline in status_res.stdout.splitlines():
+                if len(sline) >= 3:
+                    st = sline[:2]
+                    fpath = sline[3:].strip().strip('"')
+                    full_fpath = os.path.normpath(os.path.join(proj_path, fpath))
+                    if "?" in st:
+                        git_untracked.add(full_fpath)
+                    else:
+                        git_modified.add(full_fpath)
+
+        ignored_dirs = {".git", ".vs", ".idea", "node_modules", "__pycache__", ".pytest_cache", "build", "dist"}
+        items = []
+
+        try:
+            with os.scandir(target_dir) as it:
+                entries = sorted(list(it), key=lambda e: (not e.is_dir(), e.name.lower()))
+                for entry in entries:
+                    if entry.name in ignored_dirs:
+                        continue
+                    full_p = os.path.normpath(entry.path)
+                    rel_p = os.path.relpath(full_p, proj_path)
+                    is_d = entry.is_dir()
+
+                    status = "clean"
+                    if not is_d:
+                        if full_p in git_modified:
+                            status = "modified"
+                        elif full_p in git_untracked:
+                            status = "untracked"
+
+                    items.append({
+                        "name": entry.name,
+                        "path": full_p,
+                        "rel_path": rel_p.replace("\\", "/"),
+                        "is_dir": is_d,
+                        "size": entry.stat().st_size if not is_d else 0,
+                        "status": status,
+                    })
+        except Exception as e:
+            return {"success": False, "error": str(e), "items": []}
+
+        return {"success": True, "items": items, "directory": target_dir}
+
+    def _cmd_files_read_file(self, args: Dict[str, Any]) -> Any:
+        file_path = args.get("path")
+        if not file_path or not os.path.exists(file_path):
+            return {"success": False, "error": "File does not exist."}
+
+        if os.path.isdir(file_path):
+            return {"success": False, "error": "Path is a directory."}
+
+        # Size guard: 3 MB limit for in-app code editor
+        sz = os.path.getsize(file_path)
+        if sz > 3 * 1024 * 1024:
+            return {"success": False, "error": "File is too large to open in the Studio editor (> 3MB)."}
+
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            return {
+                "success": True,
+                "content": content,
+                "path": file_path,
+                "name": os.path.basename(file_path),
+                "size": sz,
+                "lines": content.count("\n") + 1 if content else 0,
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def _cmd_files_write_file(self, args: Dict[str, Any]) -> Any:
+        file_path = args.get("path")
+        content = args.get("content", "")
+        if not file_path:
+            return {"success": False, "error": "File path required."}
+
+        try:
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            return {"success": True, "path": file_path, "size": len(content.encode("utf-8"))}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    def _cmd_files_create_file(self, args: Dict[str, Any]) -> Any:
+        proj_path = args.get("proj_path")
+        rel_path = args.get("rel_path", "").strip()
+        is_dir = bool(args.get("is_dir", False))
+        if not proj_path or not rel_path:
+            return {"success": False, "error": "Project path and relative path required."}
+
+        full_path = os.path.normpath(os.path.join(proj_path, rel_path))
+        try:
+            if is_dir:
+                os.makedirs(full_path, exist_ok=True)
+            else:
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                if not os.path.exists(full_path):
+                    with open(full_path, "w", encoding="utf-8") as f:
+                        f.write("")
+            return {"success": True, "path": full_path}
+        except Exception as e:
+            return {"success": False, "error": str(e)}

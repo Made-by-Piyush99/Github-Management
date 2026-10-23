@@ -231,3 +231,29 @@ def test_upload_to_github_validation(temp_dir, temp_db):
     with pytest.raises(ValueError, match="No GitHub token"):
         disp.dispatch("projects.upload_to_github", {"project_id": proj["id"]})
 
+
+def test_studio_file_operations(temp_dir, temp_db):
+    disp = Dispatcher(temp_db.db_path)
+    proj_dir = os.path.join(temp_dir, "studio_proj")
+    os.makedirs(proj_dir, exist_ok=True)
+    proj = disp.dispatch("projects.add", {"path": proj_dir, "name": "Studio Proj"})
+
+    # Create file
+    create_res = disp.dispatch("files.create_file", {"proj_path": proj_dir, "rel_path": "main.py"})
+    assert create_res["success"]
+
+    # Write file
+    write_res = disp.dispatch("files.write_file", {"path": os.path.join(proj_dir, "main.py"), "content": "print('hello studio')"})
+    assert write_res["success"]
+
+    # Read file
+    read_res = disp.dispatch("files.read_file", {"path": os.path.join(proj_dir, "main.py")})
+    assert read_res["success"]
+    assert "hello studio" in read_res["content"]
+
+    # List tree
+    tree_res = disp.dispatch("files.list_tree", {"path": proj_dir})
+    assert tree_res["success"]
+    assert any(i["name"] == "main.py" for i in tree_res["items"])
+
+

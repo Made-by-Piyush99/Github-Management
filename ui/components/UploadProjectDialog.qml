@@ -24,7 +24,7 @@ Rectangle {
 
     visible: false
     anchors.fill: parent
-    color: Qt.rgba(0, 0, 0, 0.78)
+    color: Qt.rgba(0, 0, 0, 0.82)
     z: 9999
 
     function open(proj) {
@@ -144,32 +144,34 @@ Rectangle {
 
     // Modal Card
     Rectangle {
-        width: 620
-        height: Math.min(parent.height - 40, 680)
+        id: dialogCard
+        width: Math.min(parent.width - 40, 640)
+        height: Math.min(parent.height - 40, 700)
         radius: 12
         anchors.centerIn: parent
-        color: themeManager.isDark ? "#0E1422" : themeManager.bgCard
-        border.color: themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.25) : themeManager.borderPrimary
+        color: themeManager.isDark ? "#0A0F1D" : themeManager.bgCard
+        border.color: themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.3) : themeManager.borderPrimary
         border.width: 1
+        clip: true
 
-        // Top edge subtle glow
+        // Top edge highlight glow
         Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.margins: 1
             height: 1
-            radius: 12
-            color: Qt.rgba(56/255, 189/255, 248/255, 0.4)
+            color: Qt.rgba(56/255, 189/255, 248/255, 0.5)
             visible: themeManager.isDark
         }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 24
-            spacing: 16
+            anchors.margins: 20
+            spacing: 12
 
-            // Header Row
+            // ==========================================
+            // 1. STICKY TOP HEADER
+            // ==========================================
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
@@ -197,14 +199,14 @@ Rectangle {
                     Text {
                         text: root.isSuccess ? "Project Successfully Uploaded!" : "Upload Project to GitHub"
                         color: themeManager.textPrimary
-                        font.pixelSize: 17
+                        font.pixelSize: 16
                         font.weight: Font.Bold
                     }
 
                     Text {
-                        text: root.isSuccess ? "Repository is linked and live on GitHub with upstream tracking." : "Upload full project files with proper structure, initialize Git, and track remote."
+                        text: root.isSuccess ? "Repository is live on GitHub with upstream tracking." : "Upload full project files with proper structure, initialize Git, and track remote."
                         color: themeManager.textSecondary
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                     }
                 }
 
@@ -226,43 +228,46 @@ Rectangle {
             }
 
             // ==========================================
-            // Main Content Area: Configuration vs Success
+            // 2. SCROLLABLE MIDDLE CONTENT
             // ==========================================
-            StackLayout {
+            ScrollView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                currentIndex: root.isSuccess ? 1 : 0
+                clip: true
+                contentWidth: availableWidth
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
-                // ----------------------------------------
-                // Screen 0: Configuration & Upload Options
-                // ----------------------------------------
-                ScrollView {
-                    clip: true
-                    contentWidth: availableWidth
+                StackLayout {
+                    width: parent.width
+                    currentIndex: root.isSuccess ? 1 : 0
 
+                    // ----------------------------------------
+                    // Screen 0: Configuration & Upload Options
+                    // ----------------------------------------
                     ColumnLayout {
                         width: parent.width
                         spacing: 14
 
-                        // Project Overview Pill Card
+                        // Project Overview Card
                         Rectangle {
                             Layout.fillWidth: true
                             height: 52
                             radius: 8
-                            color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.03) : Qt.rgba(0, 0, 0, 0.03)
+                            color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.035) : Qt.rgba(0, 0, 0, 0.03)
                             border.color: themeManager.borderPrimary
                             border.width: 1
 
                             RowLayout {
                                 anchors.fill: parent
-                                anchors.margins: 12
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 12
                                 spacing: 10
 
                                 AppIcon { name: "folder"; size: 16; color: themeManager.accent }
 
                                 Column {
                                     Layout.fillWidth: true
-                                    spacing: 1
+                                    spacing: 2
                                     Text {
                                         text: root.project ? (root.project.name || "Local Project") : ""
                                         color: themeManager.textPrimary
@@ -279,7 +284,7 @@ Rectangle {
 
                                 Rectangle {
                                     height: 22
-                                    width: branchBadgeText.implicitWidth + 12
+                                    width: branchBadgeText.implicitWidth + 14
                                     radius: 11
                                     color: Qt.rgba(56/255, 189/255, 248/255, 0.15)
                                     border.color: themeManager.accent
@@ -297,7 +302,7 @@ Rectangle {
                             }
                         }
 
-                        // Mode Selector Pills: Create New vs Select Existing
+                        // Mode Selector Pills
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 8
@@ -369,7 +374,7 @@ Rectangle {
                         ColumnLayout {
                             visible: root.uploadMode === "new"
                             Layout.fillWidth: true
-                            spacing: 10
+                            spacing: 12
 
                             // Name Field
                             ColumnLayout {
@@ -385,7 +390,7 @@ Rectangle {
 
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    height: 36
+                                    height: 38
                                     radius: 7
                                     color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
                                     border.color: nameField.activeFocus ? themeManager.accent : themeManager.borderPrimary
@@ -394,9 +399,13 @@ Rectangle {
                                     TextField {
                                         id: nameField
                                         anchors.fill: parent
-                                        anchors.margins: 8
+                                        leftPadding: 12
+                                        rightPadding: 12
+                                        topPadding: 0
+                                        bottomPadding: 0
+                                        verticalAlignment: TextInput.AlignVCenter
                                         color: themeManager.textPrimary
-                                        font.pixelSize: 12
+                                        font.pixelSize: 13
                                         placeholderText: "e.g. awesome-project"
                                         background: null
                                     }
@@ -417,7 +426,7 @@ Rectangle {
 
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    height: 36
+                                    height: 38
                                     radius: 7
                                     color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
                                     border.color: descField.activeFocus ? themeManager.accent : themeManager.borderPrimary
@@ -426,7 +435,11 @@ Rectangle {
                                     TextField {
                                         id: descField
                                         anchors.fill: parent
-                                        anchors.margins: 8
+                                        leftPadding: 12
+                                        rightPadding: 12
+                                        topPadding: 0
+                                        bottomPadding: 0
+                                        verticalAlignment: TextInput.AlignVCenter
                                         color: themeManager.textPrimary
                                         font.pixelSize: 12
                                         placeholderText: "Short summary of what this project contains..."
@@ -442,7 +455,7 @@ Rectangle {
 
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    height: 44
+                                    height: 48
                                     radius: 7
                                     color: !root.isPrivate ? (themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.12) : Qt.rgba(2, 132, 199, 0.1)) : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.03) : Qt.rgba(0, 0, 0, 0.03))
                                     border.color: !root.isPrivate ? themeManager.accent : themeManager.borderPrimary
@@ -456,9 +469,9 @@ Rectangle {
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 10
-                                        spacing: 8
-                                        AppIcon { name: "repo"; size: 14; color: !root.isPrivate ? themeManager.accent : themeManager.textMuted }
+                                        anchors.margins: 12
+                                        spacing: 10
+                                        AppIcon { name: "repo"; size: 16; color: !root.isPrivate ? themeManager.accent : themeManager.textMuted }
                                         Column {
                                             spacing: 1
                                             Text { text: "Public"; color: themeManager.textPrimary; font.pixelSize: 12; font.weight: Font.DemiBold }
@@ -469,7 +482,7 @@ Rectangle {
 
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    height: 44
+                                    height: 48
                                     radius: 7
                                     color: root.isPrivate ? (themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.12) : Qt.rgba(2, 132, 199, 0.1)) : (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.03) : Qt.rgba(0, 0, 0, 0.03))
                                     border.color: root.isPrivate ? themeManager.accent : themeManager.borderPrimary
@@ -483,9 +496,9 @@ Rectangle {
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 10
-                                        spacing: 8
-                                        AppIcon { name: "shield"; size: 14; color: root.isPrivate ? themeManager.accent : themeManager.textMuted }
+                                        anchors.margins: 12
+                                        spacing: 10
+                                        AppIcon { name: "shield"; size: 16; color: root.isPrivate ? themeManager.accent : themeManager.textMuted }
                                         Column {
                                             spacing: 1
                                             Text { text: "Private (Recommended)"; color: themeManager.textPrimary; font.pixelSize: 12; font.weight: Font.DemiBold }
@@ -512,8 +525,8 @@ Rectangle {
                             // Search filter box
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 32
-                                radius: 6
+                                height: 36
+                                radius: 7
                                 color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
                                 border.color: themeManager.borderPrimary
                                 border.width: 1
@@ -521,25 +534,23 @@ Rectangle {
                                 RowLayout {
                                     anchors.fill: parent
                                     anchors.margins: 6
-                                    spacing: 6
-                                    AppIcon { name: "search"; size: 12; color: themeManager.textMuted }
-                                    TextInput {
+                                    spacing: 8
+                                    AppIcon { name: "search"; size: 13; color: themeManager.textMuted }
+                                    TextField {
                                         id: repoFilterInput
                                         Layout.fillWidth: true
+                                        leftPadding: 4
+                                        rightPadding: 4
+                                        topPadding: 0
+                                        bottomPadding: 0
+                                        verticalAlignment: TextInput.AlignVCenter
                                         color: themeManager.textPrimary
-                                        font.pixelSize: 11
-                                        clip: true
+                                        font.pixelSize: 12
+                                        placeholderText: "Search your GitHub repositories..."
+                                        background: null
                                         onTextChanged: {
                                             root.repoSearchQuery = text;
                                             root.filterRepos();
-                                        }
-                                        Text {
-                                            anchors.fill: parent
-                                            visible: !repoFilterInput.text
-                                            text: "Search your GitHub repositories..."
-                                            color: themeManager.textMuted
-                                            font.pixelSize: 11
-                                            verticalAlignment: Text.AlignVCenter
                                         }
                                     }
                                 }
@@ -555,87 +566,87 @@ Rectangle {
                                 border.width: 1
                                 clip: true
 
-                            ListView {
-                                id: repoList
-                                anchors.fill: parent
-                                anchors.margins: 4
-                                model: root.filteredRepos
-                                boundsBehavior: Flickable.StopAtBounds
-                                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                                ListView {
+                                    id: repoList
+                                    anchors.fill: parent
+                                    anchors.margins: 4
+                                    model: root.filteredRepos
+                                    boundsBehavior: Flickable.StopAtBounds
+                                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
-                                delegate: Rectangle {
-                                    width: ListView.view.width
-                                    height: 38
-                                    radius: 5
-                                    color: (root.selectedRepo && root.selectedRepo.id === modelData.id) ? (themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.18) : Qt.rgba(2, 132, 199, 0.12)) : (itemMouse.containsMouse ? (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : Qt.rgba(0, 0, 0, 0.04)) : "transparent")
+                                    delegate: Rectangle {
+                                        width: ListView.view.width
+                                        height: 38
+                                        radius: 5
+                                        color: (root.selectedRepo && root.selectedRepo.id === modelData.id) ? (themeManager.isDark ? Qt.rgba(56/255, 189/255, 248/255, 0.18) : Qt.rgba(2, 132, 199, 0.12)) : (itemMouse.containsMouse ? (themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : Qt.rgba(0, 0, 0, 0.04)) : "transparent")
 
-                                    MouseArea {
-                                        id: itemMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.selectedRepo = modelData
+                                        MouseArea {
+                                            id: itemMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root.selectedRepo = modelData
+                                        }
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 10
+                                            spacing: 8
+
+                                            AppIcon {
+                                                name: modelData.private ? "shield" : "repo"
+                                                size: 13
+                                                color: (root.selectedRepo && root.selectedRepo.id === modelData.id) ? themeManager.accent : themeManager.textSecondary
+                                            }
+
+                                            Column {
+                                                Layout.fillWidth: true
+                                                spacing: 1
+                                                Text {
+                                                    text: modelData.full_name || modelData.name
+                                                    color: themeManager.textPrimary
+                                                    font.pixelSize: 12
+                                                    font.weight: (root.selectedRepo && root.selectedRepo.id === modelData.id) ? Font.DemiBold : Font.Normal
+                                                }
+                                                Text {
+                                                    visible: !!modelData.description
+                                                    text: modelData.description
+                                                    color: themeManager.textMuted
+                                                    font.pixelSize: 10
+                                                    elide: Text.ElideRight
+                                                    width: parent.width
+                                                }
+                                            }
+
+                                            Rectangle {
+                                                height: 18
+                                                width: privBadge.implicitWidth + 8
+                                                radius: 3
+                                                color: modelData.private ? Qt.rgba(234/255, 179/255, 8/255, 0.15) : Qt.rgba(34/255, 197/255, 94/255, 0.15)
+                                                Text {
+                                                    id: privBadge
+                                                    anchors.centerIn: parent
+                                                    text: modelData.private ? "Private" : "Public"
+                                                    color: modelData.private ? themeManager.warning : themeManager.success
+                                                    font.pixelSize: 9
+                                                }
+                                            }
+                                        }
                                     }
 
-                                    RowLayout {
-                                        anchors.fill: parent
-                                        anchors.leftMargin: 10
-                                        anchors.rightMargin: 10
-                                        spacing: 8
-
-                                        AppIcon {
-                                            name: modelData.private ? "shield" : "repo"
-                                            size: 13
-                                            color: (root.selectedRepo && root.selectedRepo.id === modelData.id) ? themeManager.accent : themeManager.textSecondary
-                                        }
-
-                                        Column {
-                                            Layout.fillWidth: true
-                                            spacing: 1
-                                            Text {
-                                                text: modelData.full_name || modelData.name
-                                                color: themeManager.textPrimary
-                                                font.pixelSize: 12
-                                                font.weight: (root.selectedRepo && root.selectedRepo.id === modelData.id) ? Font.DemiBold : Font.Normal
-                                            }
-                                            Text {
-                                                visible: !!modelData.description
-                                                text: modelData.description
-                                                color: themeManager.textMuted
-                                                font.pixelSize: 10
-                                                elide: Text.ElideRight
-                                                width: parent.width
-                                            }
-                                        }
-
-                                        Rectangle {
-                                            height: 18
-                                            width: privBadge.implicitWidth + 8
-                                            radius: 3
-                                            color: modelData.private ? Qt.rgba(234/255, 179/255, 8/255, 0.15) : Qt.rgba(34/255, 197/255, 94/255, 0.15)
-                                            Text {
-                                                id: privBadge
-                                                anchors.centerIn: parent
-                                                text: modelData.private ? "Private" : "Public"
-                                                color: modelData.private ? themeManager.warning : themeManager.success
-                                                font.pixelSize: 9
-                                            }
-                                        }
+                                    Text {
+                                        anchors.centerIn: parent
+                                        visible: root.filteredRepos.length === 0
+                                        text: "No repositories found"
+                                        color: themeManager.textMuted
+                                        font.pixelSize: 11
                                     }
-                                }
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    visible: root.filteredRepos.length === 0
-                                    text: "No repositories found"
-                                    color: themeManager.textMuted
-                                    font.pixelSize: 11
                                 }
                             }
                         }
-                    }
 
-                        // Proper Structure & Git Options Card
+                        // Proper Structure & Git Rules Card
                         Rectangle {
                             Layout.fillWidth: true
                             implicitHeight: structCol.implicitHeight + 20
@@ -647,8 +658,8 @@ Rectangle {
                             ColumnLayout {
                                 id: structCol
                                 anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 10
+                                anchors.margins: 14
+                                spacing: 12
 
                                 RowLayout {
                                     Layout.fillWidth: true
@@ -662,14 +673,12 @@ Rectangle {
                                         font.pixelSize: 12
                                         font.weight: Font.DemiBold
                                     }
-
-                                    Item { Layout.fillWidth: true }
                                 }
 
                                 // Checkbox: .gitignore
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    spacing: 8
+                                    spacing: 10
 
                                     CheckBox {
                                         id: gitignoreCheck
@@ -679,11 +688,11 @@ Rectangle {
 
                                     Column {
                                         Layout.fillWidth: true
-                                        spacing: 1
+                                        spacing: 2
                                         Text {
                                             text: "Ensure clean structure with smart .gitignore"
                                             color: themeManager.textPrimary
-                                            font.pixelSize: 11
+                                            font.pixelSize: 12
                                             font.weight: Font.Medium
                                         }
                                         Text {
@@ -708,7 +717,7 @@ Rectangle {
 
                                     Rectangle {
                                         width: 130
-                                        height: 30
+                                        height: 34
                                         radius: 6
                                         color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
                                         border.color: themeManager.borderPrimary
@@ -717,9 +726,13 @@ Rectangle {
                                         TextField {
                                             id: branchField
                                             anchors.fill: parent
-                                            anchors.margins: 4
+                                            leftPadding: 8
+                                            rightPadding: 8
+                                            topPadding: 0
+                                            bottomPadding: 0
+                                            verticalAlignment: TextInput.AlignVCenter
                                             color: themeManager.textPrimary
-                                            font.pixelSize: 11
+                                            font.pixelSize: 12
                                             background: null
                                         }
                                     }
@@ -741,7 +754,7 @@ Rectangle {
 
                                     Rectangle {
                                         Layout.fillWidth: true
-                                        height: 32
+                                        height: 38
                                         radius: 6
                                         color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : themeManager.bgInput
                                         border.color: themeManager.borderPrimary
@@ -750,9 +763,13 @@ Rectangle {
                                         TextField {
                                             id: commitMsgField
                                             anchors.fill: parent
-                                            anchors.margins: 6
+                                            leftPadding: 12
+                                            rightPadding: 12
+                                            topPadding: 0
+                                            bottomPadding: 0
+                                            verticalAlignment: TextInput.AlignVCenter
                                             color: themeManager.textPrimary
-                                            font.pixelSize: 11
+                                            font.pixelSize: 12
                                             background: null
                                         }
                                     }
@@ -770,215 +787,215 @@ Rectangle {
                             wrapMode: Text.Wrap
                         }
                     }
-                }
 
-                // ----------------------------------------
-                // Screen 1: Success & Direct Remote Controls
-                // ----------------------------------------
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 16
+                    // ----------------------------------------
+                    // Screen 1: Success & Direct Remote Controls
+                    // ----------------------------------------
+                    ColumnLayout {
+                        width: parent.width
+                        spacing: 16
 
-                    // Success Banner
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 90
-                        radius: 10
-                        color: Qt.rgba(34/255, 197/255, 94/255, 0.12)
-                        border.color: themeManager.success
-                        border.width: 1
+                        // Success Banner
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 90
+                            radius: 10
+                            color: Qt.rgba(34/255, 197/255, 94/255, 0.12)
+                            border.color: themeManager.success
+                            border.width: 1
 
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: 16
-                            spacing: 14
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 16
+                                spacing: 14
 
-                            Rectangle {
-                                width: 44
-                                height: 44
-                                radius: 22
-                                color: Qt.rgba(34/255, 197/255, 94/255, 0.2)
-                                AppIcon {
-                                    anchors.centerIn: parent
-                                    name: "check"
-                                    size: 22
-                                    color: themeManager.success
-                                }
-                            }
-
-                            Column {
-                                Layout.fillWidth: true
-                                spacing: 2
-
-                                Text {
-                                    text: "Full Project Published to GitHub!"
-                                    color: themeManager.success
-                                    font.pixelSize: 15
-                                    font.weight: Font.Bold
+                                Rectangle {
+                                    width: 44
+                                    height: 44
+                                    radius: 22
+                                    color: Qt.rgba(34/255, 197/255, 94/255, 0.2)
+                                    AppIcon {
+                                        anchors.centerIn: parent
+                                        name: "check"
+                                        size: 22
+                                        color: themeManager.success
+                                    }
                                 }
 
-                                Text {
-                                    text: "Your repository files are staged, committed, and pushed upstream with tracking."
-                                    color: themeManager.textPrimary
-                                    font.pixelSize: 12
-                                }
-                            }
-                        }
-                    }
+                                Column {
+                                    Layout.fillWidth: true
+                                    spacing: 2
 
-                    // Remote Repository Link Card
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 64
-                        radius: 8
-                        color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : Qt.rgba(0, 0, 0, 0.03)
-                        border.color: themeManager.borderPrimary
-                        border.width: 1
+                                    Text {
+                                        text: "Full Project Published to GitHub!"
+                                        color: themeManager.success
+                                        font.pixelSize: 15
+                                        font.weight: Font.Bold
+                                    }
 
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: 14
-                            spacing: 10
-
-                            AppIcon { name: "github"; size: 18; color: themeManager.accent }
-
-                            Column {
-                                Layout.fillWidth: true
-                                spacing: 2
-                                Text {
-                                    text: "GitHub Remote URL"
-                                    color: themeManager.textMuted
-                                    font.pixelSize: 10
-                                    font.weight: Font.Bold
-                                }
-                                Text {
-                                    text: root.uploadResult ? (root.uploadResult.remote_url || "") : ""
-                                    color: themeManager.accent
-                                    font.pixelSize: 12
-                                    font.weight: Font.Medium
-                                    elide: Text.ElideRight
-                                }
-                            }
-
-                            ActionButton {
-                                text: "Open on GitHub"
-                                iconName: "external"
-                                btnStyle: "secondary"
-                                small: true
-                                onClicked: {
-                                    if (root.uploadResult && root.uploadResult.html_url) {
-                                        Qt.openUrlExternally(root.uploadResult.html_url);
+                                    Text {
+                                        text: "Your repository files are staged, committed, and pushed upstream with tracking."
+                                        color: themeManager.textPrimary
+                                        font.pixelSize: 12
                                     }
                                 }
                             }
                         }
-                    }
 
-                    // Direct Remote Management Panel: Pull, Push, & All Operations
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: opCol.implicitHeight + 24
-                        radius: 8
-                        color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.025) : Qt.rgba(0, 0, 0, 0.02)
-                        border.color: themeManager.borderPrimary
-                        border.width: 1
-
-                        ColumnLayout {
-                            id: opCol
-                            anchors.fill: parent
-                            anchors.margins: 16
-                            spacing: 12
-
-                            Text {
-                                text: "REMOTE OPERATIONS (PULL, PUSH & SYNC)"
-                                color: themeManager.textMuted
-                                font.pixelSize: 11
-                                font.weight: Font.Bold
-                            }
+                        // Remote Repository Link Card
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 64
+                            radius: 8
+                            color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.04) : Qt.rgba(0, 0, 0, 0.03)
+                            border.color: themeManager.borderPrimary
+                            border.width: 1
 
                             RowLayout {
-                                Layout.fillWidth: true
+                                anchors.fill: parent
+                                anchors.margins: 14
                                 spacing: 10
 
-                                ActionButton {
+                                AppIcon { name: "github"; size: 18; color: themeManager.accent }
+
+                                Column {
                                     Layout.fillWidth: true
-                                    text: "Pull Changes"
-                                    iconName: "pull"
+                                    spacing: 2
+                                    Text {
+                                        text: "GitHub Remote URL"
+                                        color: themeManager.textMuted
+                                        font.pixelSize: 10
+                                        font.weight: Font.Bold
+                                    }
+                                    Text {
+                                        text: root.uploadResult ? (root.uploadResult.remote_url || "") : ""
+                                        color: themeManager.accent
+                                        font.pixelSize: 12
+                                        font.weight: Font.Medium
+                                        elide: Text.ElideRight
+                                    }
+                                }
+
+                                ActionButton {
+                                    text: "Open on GitHub"
+                                    iconName: "external"
                                     btnStyle: "secondary"
+                                    small: true
                                     onClicked: {
-                                        toast.show("Pulling from origin...", "info");
-                                        backendBridge.sendRequest("git.pull", {
-                                            "path": root.project.local_path,
-                                            "project_id": root.project.id
-                                        }, function(s, d, err) {
-                                            if (s) toast.show("Pull completed successfully!", "success");
-                                            else toast.show("Pull failed: " + err, "error");
-                                        });
-                                    }
-                                }
-
-                                ActionButton {
-                                    Layout.fillWidth: true
-                                    text: "Push Changes"
-                                    iconName: "push"
-                                    btnStyle: "primary"
-                                    onClicked: {
-                                        toast.show("Pushing to origin...", "info");
-                                        backendBridge.sendRequest("git.push", {
-                                            "path": root.project.local_path,
-                                            "project_id": root.project.id
-                                        }, function(s, d, err) {
-                                            if (s) toast.show("Push completed successfully!", "success");
-                                            else toast.show("Push failed: " + err, "error");
-                                        });
-                                    }
-                                }
-
-                                ActionButton {
-                                    Layout.fillWidth: true
-                                    text: "Fetch Remote"
-                                    iconName: "refresh"
-                                    btnStyle: "subtle"
-                                    onClicked: {
-                                        toast.show("Fetching remote refs...", "info");
-                                        backendBridge.sendRequest("git.fetch", {
-                                            "path": root.project.local_path,
-                                            "project_id": root.project.id
-                                        }, function(s, d, err) {
-                                            if (s) toast.show("Fetch completed!", "success");
-                                            else toast.show("Fetch failed: " + err, "error");
-                                        });
-                                    }
-                                }
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 10
-
-                                ActionButton {
-                                    Layout.fillWidth: true
-                                    text: "Open Local Folder"
-                                    iconName: "folder"
-                                    btnStyle: "subtle"
-                                    onClicked: backendBridge.openFolder(root.project.local_path)
-                                }
-
-                                ActionButton {
-                                    Layout.fillWidth: true
-                                    text: "Open in Changes Tab"
-                                    iconName: "diff"
-                                    btnStyle: "subtle"
-                                    onClicked: {
-                                        root.close();
-                                        appWindow.activeTab = 4;
+                                        if (root.uploadResult && root.uploadResult.html_url) {
+                                            Qt.openUrlExternally(root.uploadResult.html_url);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    Item { Layout.fillHeight: true }
+                        // Direct Remote Management Panel: Pull, Push, & All Operations
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: opCol.implicitHeight + 24
+                            radius: 8
+                            color: themeManager.isDark ? Qt.rgba(255, 255, 255, 0.025) : Qt.rgba(0, 0, 0, 0.02)
+                            border.color: themeManager.borderPrimary
+                            border.width: 1
+
+                            ColumnLayout {
+                                id: opCol
+                                anchors.fill: parent
+                                anchors.margins: 16
+                                spacing: 12
+
+                                Text {
+                                    text: "REMOTE OPERATIONS (PULL, PUSH & SYNC)"
+                                    color: themeManager.textMuted
+                                    font.pixelSize: 11
+                                    font.weight: Font.Bold
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 10
+
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        text: "Pull Changes"
+                                        iconName: "pull"
+                                        btnStyle: "secondary"
+                                        onClicked: {
+                                            toast.show("Pulling from origin...", "info");
+                                            backendBridge.sendRequest("git.pull", {
+                                                "path": root.project.local_path,
+                                                "project_id": root.project.id
+                                            }, function(s, d, err) {
+                                                if (s) toast.show("Pull completed successfully!", "success");
+                                                else toast.show("Pull failed: " + err, "error");
+                                            });
+                                        }
+                                    }
+
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        text: "Push Changes"
+                                        iconName: "push"
+                                        btnStyle: "primary"
+                                        onClicked: {
+                                            toast.show("Pushing to origin...", "info");
+                                            backendBridge.sendRequest("git.push", {
+                                                "path": root.project.local_path,
+                                                "project_id": root.project.id
+                                            }, function(s, d, err) {
+                                                if (s) toast.show("Push completed successfully!", "success");
+                                                else toast.show("Push failed: " + err, "error");
+                                            });
+                                        }
+                                    }
+
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        text: "Fetch Remote"
+                                        iconName: "refresh"
+                                        btnStyle: "subtle"
+                                        onClicked: {
+                                            toast.show("Fetching remote refs...", "info");
+                                            backendBridge.sendRequest("git.fetch", {
+                                                "path": root.project.local_path,
+                                                "project_id": root.project.id
+                                            }, function(s, d, err) {
+                                                if (s) toast.show("Fetch completed!", "success");
+                                                else toast.show("Fetch failed: " + err, "error");
+                                            });
+                                        }
+                                    }
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 10
+
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        text: "Open Local Folder"
+                                        iconName: "folder"
+                                        btnStyle: "subtle"
+                                        onClicked: backendBridge.openFolder(root.project.local_path)
+                                    }
+
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        text: "View Project Details"
+                                        iconName: "external"
+                                        btnStyle: "primary"
+                                        onClicked: {
+                                            root.close();
+                                            appWindow.openProjectDetails(root.project.id);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Item { Layout.fillHeight: true }
+                    }
                 }
             }
 
@@ -989,7 +1006,9 @@ Rectangle {
                 color: themeManager.borderPrimary
             }
 
-            // Bottom Action Bar
+            // ==========================================
+            // 3. STICKY BOTTOM ACTION BAR (Always visible!)
+            // ==========================================
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
