@@ -5,9 +5,22 @@
 #include <QElapsedTimer>
 #include <QCoreApplication>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 BackendBridge::BackendBridge(QObject *parent)
     : QObject(parent)
 {
+#ifdef Q_OS_WIN
+    // Ensure all child processes (DevSyncBackend, Python) spawn with NO window and stay 100% background
+    m_process.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args) {
+        args->flags |= CREATE_NO_WINDOW;
+        args->startupInfo->dwFlags |= STARTF_USESHOWWINDOW;
+        args->startupInfo->wShowWindow = SW_HIDE;
+    });
+#endif
+
     connect(&m_process, &QProcess::readyReadStandardOutput, this, &BackendBridge::onReadyReadStandardOutput);
     connect(&m_process, &QProcess::readyReadStandardError, this, &BackendBridge::onReadyReadStandardError);
     connect(&m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &BackendBridge::onProcessFinished);
@@ -21,11 +34,25 @@ BackendBridge::~BackendBridge()
 
 QString BackendBridge::findPythonExecutable()
 {
-    // Check known paths
+    QString appDir = QCoreApplication::applicationDirPath();
+    // Prioritize windowless pythonw.exe so no console ever appears in development mode
     QStringList candidates = {
+        appDir + "/python/pythonw.exe",
+        appDir + "/pythonw.exe",
+        "C:/Program Files/PyManager/pythonw.exe",
+        "pythonw.exe",
+        "pythonw",
+        "pythonw3",
+        "C:/Users/Administrator/AppData/Local/Programs/Python/Python314/pythonw.exe",
+        "C:/Python314/pythonw.exe",
+        "C:/Python312/pythonw.exe",
+        "C:/Python311/pythonw.exe",
+        appDir + "/python/python.exe",
+        appDir + "/python.exe",
+        "C:/Program Files/PyManager/python.exe",
+        "python.exe",
         "python",
         "python3",
-        "C:/Program Files/PyManager/python.exe",
         "C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe",
         "C:/Python314/python.exe",
         "C:/Python312/python.exe",
@@ -53,16 +80,44 @@ void BackendBridge::start()
     m_starting = true;
     emit startingChanged(true);
 
-    QString pythonExe = findPythonExecutable();
-    QString workDir = QDir::currentPath();
+    QString appDir = QCoreApplication::applicationDirPath();
+    QString workDir = appDir;
+    if (QDir(QDir::currentPath() + "/backend").exists()) {
+        workDir = QDir::currentPath();
+    }
 
-    // Set UTF-8 encoding for Python
+    // Set UTF-8 encoding for Python / backend
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("PYTHONIOENCODING", "utf-8");
     env.insert("PYTHONUNBUFFERED", "1");
     m_process.setProcessEnvironment(env);
     m_process.setWorkingDirectory(workDir);
 
+    // 1. Check for standalone compiled backend worker first
+    QStringList backendCandidates = {
+        appDir + "/DevSyncBackend.exe",
+        appDir + "/backend/DevSyncBackend.exe",
+        appDir + "/DevSyncBackend/DevSyncBackend.exe",
+        workDir + "/dist/DevSyncBackend/DevSyncBackend.exe",
+        workDir + "/dist/DevSyncStudio/DevSyncBackend.exe"
+    };
+
+    QString standaloneBackend;
+    for (const QString &cand : backendCandidates) {
+        if (QFileInfo::exists(cand)) {
+            standaloneBackend = cand;
+            break;
+        }
+    }
+
+    if (!standaloneBackend.isEmpty()) {
+        qDebug() << "[BackendBridge] Spawning bundled native backend:" << standaloneBackend << "in" << workDir;
+        m_process.start(standaloneBackend, QStringList());
+        return;
+    }
+
+    // 2. Fall back to Python interpreter (for dev environment)
+    QString pythonExe = findPythonExecutable();
     QStringList args;
     args << "-m" << "backend.server";
 

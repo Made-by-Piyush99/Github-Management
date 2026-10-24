@@ -36,6 +36,7 @@ set(SOURCES
     cpp/ThemeManager.h
     cpp/ThemeManager.cpp
     qml.qrc
+    app.rc
 )
 
 qt_add_executable(DevSyncStudio

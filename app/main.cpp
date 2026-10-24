@@ -34,6 +34,14 @@ int main(int argc, char *argv[])
     app.setApplicationName("DevSync Studio");
     app.setApplicationVersion("1.0.0");
 
+    QIcon appIcon("assets/app.ico");
+    if (appIcon.isNull()) {
+        appIcon = QIcon(app.applicationDirPath() + "/assets/app.ico");
+    }
+    if (!appIcon.isNull()) {
+        app.setWindowIcon(appIcon);
+    }
+
     // Use Basic/Fusion style for custom animated QML components
     QQuickStyle::setStyle("Basic");
 

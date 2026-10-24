@@ -54,6 +54,13 @@ class Dispatcher:
 
     def dispatch(self, cmd: str, args: Dict[str, Any]) -> Any:
         """Executes a command by name with provided arguments."""
+        if cmd == "files.read":
+            cmd = "files.read_file"
+        elif cmd == "files.write":
+            cmd = "files.write_file"
+        elif cmd == "files.create":
+            cmd = "files.create_file"
+
         handler_name = f"_cmd_{cmd.replace('.', '_')}"
         handler = getattr(self, handler_name, None)
         if not handler:
@@ -557,6 +564,7 @@ class Dispatcher:
 
         mode = args.get("mode", "new")
         branch = (args.get("branch") or proj.get("default_branch") or "main").strip() or "main"
+        branch = re.sub(r"[\s~^:?*\[\\]+", "-", branch).strip("-") or "main"
         commit_message = (args.get("commit_message") or "").strip() or "Initial commit: upload project structure"
         create_gitignore = bool(args.get("create_gitignore", True))
 
@@ -753,6 +761,8 @@ class Dispatcher:
 
     def _cmd_settings_set(self, args: Dict[str, Any]) -> Any:
         new_settings = args.get("settings", {})
+        if not new_settings and "key" in args:
+            new_settings = {args["key"]: args.get("value")}
         self.settings_store.set_multiple(new_settings)
         # Update git path or api url if modified
         if "git_path" in new_settings:

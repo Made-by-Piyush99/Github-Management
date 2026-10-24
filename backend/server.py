@@ -14,9 +14,18 @@ from typing import Dict, Any
 
 from .dispatcher import Dispatcher
 
-# Ensure stdout and stderr use UTF-8
-sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
-sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)
+# Ensure stdout and stderr use UTF-8 safely
+if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
+    except Exception:
+        pass
+
+if sys.stderr is not None and hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)
+    except Exception:
+        pass
 
 # Configure logging to STDERR ONLY
 logging.basicConfig(
